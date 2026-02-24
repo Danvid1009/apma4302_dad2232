@@ -1,0 +1,207 @@
+% Compile with: pdflatex hw2_solutions.tex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+\title{APMA 4302 -- Homework 2 Solutions}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+%=============================================================================
+\section*{Problem 1: Condition Number and Error Bounds (10 pts)}
+%=============================================================================
+
+The condition number of a matrix $A$ is $\kappa(A) = \|A\| \|A^{-1}\|$, where $\|Ax\| \le \|A\| \|x\|$.
+
+\medskip
+\noindent\textbf{(a)} Assume $A$ is invertible and $Au = b$. Show that the relative error in the solution satisfies
+\[
+\frac{\|u - \hat{u}\|}{\|u\|} \le \kappa(A) \frac{\|b - \hat{b}\|}{\|b\|},
+\]
+where $\hat{u}$ solves $A\hat{u} = \hat{b}$ (perturbed right-hand side).
+
+\medskip
+\noindent\textbf{(b)} Suppose $Au = b$ and $Ae = r$. Show that
+\[
+\frac{1}{\kappa(A)} \frac{\|r\|}{\|b\|} \le \frac{\|e\|}{\|u\|} \le \kappa(A) \frac{\|r\|}{\|b\|},
+\]
+where $e = u - \hat{u}$ and $r = b - A\hat{u}$ (residual). Give an interpretation.
+
+\subsection*{Solution}
+
+\paragraph{Part (a).} We have $u = A^{-1}b$ and $\hat{u} = A^{-1}\hat{b}$, so $u - \hat{u} = A^{-1}(b - \hat{b})$. By the matrix norm property,
+\[
+\|u - \hat{u}\| = \|A^{-1}(b - \hat{b})\| \le \|A^{-1}\| \|b - \hat{b}\|.
+\]
+Also $b = Au$ gives $\|b\| \le \|A\| \|u\|$, so $\|u\| \ge \|b\|/\|A\|$. Hence
+\[
+\frac{\|u - \hat{u}\|}{\|u\|} \le \frac{\|A^{-1}\| \|b - \hat{b}\|}{\|u\|} \le \|A^{-1}\| \|b - \hat{b}\| \cdot \frac{\|A\|}{\|b\|} = \kappa(A) \frac{\|b - \hat{b}\|}{\|b\|}.
+\]
+
+\paragraph{Part (b).} By definition, $r = b - A\hat{u} = A(u - \hat{u}) = Ae$, so $Ae = r$.
+
+\emph{Upper bound:} $e = A^{-1}r$ implies $\|e\| \le \|A^{-1}\| \|r\|$. With $\|b\| \le \|A\| \|u\|$ we get $\|u\| \ge \|b\|/\|A\|$. Thus
+\[
+\frac{\|e\|}{\|u\|} \le \kappa(A) \frac{\|r\|}{\|b\|}.
+\]
+
+\emph{Lower bound:} $r = Ae$ gives $\|r\| \le \|A\| \|e\|$, so $\|e\| \ge \|r\|/\|A\|$. Also $\|u\| = \|A^{-1}b\| \le \|A^{-1}\| \|b\|$. Therefore
+\[
+\frac{\|e\|}{\|u\|} \ge \frac{1}{\kappa(A)} \frac{\|r\|}{\|b\|}.
+\]
+
+\medskip
+\noindent\textbf{Interpretation.} The relative error $\|e\|/\|u\|$ is bracketed by the relative residual $\|r\|/\|b\|$ scaled by $1/\kappa(A)$ and by $\kappa(A)$. A small residual can still correspond to a large relative error when $\kappa(A)$ is large (ill-conditioning). For well-conditioned $A$, error and residual are of the same order.
+
+\newpage
+%=============================================================================
+\section*{Problem 2: Discrete Laplacian Matrix (10 pts)}
+%=============================================================================
+
+Let
+\[
+A = \frac{1}{h^2} \operatorname{tridiag}(-1, 2, -1)
+\]
+be the symmetric positive definite matrix from the centered finite-difference discretization of $-u''(x)$ on $x \in [0,1]$ with homogeneous Dirichlet boundary conditions. Here $h = 1/m$ and $A$ is $(m-1) \times (m-1)$.
+
+\medskip
+\noindent\textbf{(a)} Show that the eigenvectors of $A$ are $v_j(i) = \sin(j\pi x_i)$ with $x_i = ih$, $i = 1, \ldots, m-1$.
+
+\medskip
+\noindent\textbf{(b)} Find the corresponding eigenvalues $\lambda_j$.
+
+\medskip
+\noindent\textbf{(c)} Show that $\kappa(A) \sim O(m^2)$ as $m \to \infty$.
+
+\subsection*{Solution}
+
+\paragraph{Part (a): Eigenvectors.} Apply the discrete Laplacian to $v_j$ at interior index $i$. The stencil $(1/h^2)(-1, 2, -1)$ gives
+\[
+(A v_j)(i) = \frac{1}{h^2}\bigl[ -v_j(i-1) + 2v_j(i) - v_j(i+1) \bigr].
+\]
+Using $x_i = ih$ and $v_j(i) = \sin(j\pi x_i) = \sin(j\pi i h)$:
+\[
+-\sin(j\pi(i-1)h) + 2\sin(j\pi i h) - \sin(j\pi(i+1)h)
+= 2\sin(j\pi i h) - \bigl[ \sin(j\pi i h - j\pi h) + \sin(j\pi i h + j\pi h) \bigr].
+\]
+By $\sin(\alpha - \theta) + \sin(\alpha + \theta) = 2\sin(\alpha)\cos(\theta)$ with $\alpha = j\pi i h$, $\theta = j\pi h$:
+\[
+= 2\sin(j\pi i h) - 2\sin(j\pi i h)\cos(j\pi h)
+= 2\sin(j\pi i h)\bigl[1 - \cos(j\pi h)\bigr]
+= 4\sin(j\pi i h)\,\sin^2(j\pi h/2).
+\]
+Thus $(A v_j)(i) = (4/h^2)\sin^2(j\pi h/2)\,v_j(i)$, so $v_j$ is an eigenvector with eigenvalue $\lambda_j = (4/h^2)\sin^2(j\pi h/2)$.
+
+\paragraph{Part (b): Eigenvalues.}
+\[
+\lambda_j = \frac{4}{h^2} \sin^2\Bigl(\frac{j\pi h}{2}\Bigr) = \frac{4}{h^2} \sin^2\Bigl(\frac{j\pi}{2m}\Bigr), \qquad j = 1, \ldots, m-1.
+\]
+Equivalently, $\lambda_j = 4m^2 \sin^2(j\pi/(2m))$.
+
+\paragraph{Part (c): Condition number.} For SPD $A$, $\kappa(A) = \lambda_{\max}/\lambda_{\min}$. The largest eigenvalue is $\lambda_{m-1} = (4/h^2)\sin^2((m-1)\pi/(2m)) \to 4/h^2 = 4m^2$ as $m \to \infty$. The smallest is $\lambda_1 = (4/h^2)\sin^2(\pi/(2m))$; for large $m$, $\sin(\pi/(2m)) \approx \pi/(2m)$, so $\lambda_1 \approx \pi^2$. Hence $\kappa(A) \sim (4m^2)/\pi^2 = O(m^2)$ as $m \to \infty$.
+
+\newpage
+%=============================================================================
+\section*{Problem 3: Boundary Value Problem with PETSc (20 pts)}
+%=============================================================================
+
+BVP: $-u''(x) + \gamma u(x) = f(x)$ on $x \in [0,1]$ with Dirichlet boundary conditions.
+
+\medskip
+\noindent\textbf{(a)} Find $f(x)$ for the manufactured solution
+\[
+u(x) = \sin(k\pi x) + c\Bigl(1 - \frac{1}{2}\Bigr)^3,
+\]
+where $k$ is a positive integer and $c$ is a real constant.
+
+\medskip
+\noindent\textbf{(b)} Modify \texttt{tri.c} (p4pdes Ch.\,2) to solve this BVP with PETSc: run with \texttt{mpiexec -np P ./bvp -options\_file options\_file}; assemble matrix and RHS in parallel; use \texttt{MatZeroRowsColumns} to enforce Dirichlet BCs; compute and print relative error; output solution, exact solution, and RHS to HDF5; use \texttt{plot\_bvp.py} to visualize.
+
+\medskip
+\noindent\textbf{(c)} Modify \texttt{plot\_bvp.py} to plot error vs.\ $h$ for $\gamma = 0$, $k = 1, 5, 10$, and $m = 40, 80, 160, \ldots, 1280$. Report observed order of convergence.
+
+\subsection*{Solution}
+
+\paragraph{Part (a): Manufactured solution and $f(x)$.} With the given manufactured solution we have
+\[
+u(x) = \sin(k\pi x) + c\Bigl(1 - \frac{1}{2}\Bigr)^3 = \sin(k\pi x) + \frac{c}{8}.
+\]
+Differentiating: $u'(x) = k\pi\cos(k\pi x)$ and $u''(x) = -k^2\pi^2\sin(k\pi x)$. Substituting into $-u'' + \gamma u = f(x)$ gives
+\[
+-u'' + \gamma u = k^2\pi^2\sin(k\pi x) + \gamma\sin(k\pi x) + \frac{\gamma c}{8},
+\]
+hence
+\[
+\boxed{f(x) = (k^2\pi^2 + \gamma)\sin(k\pi x) + \frac{\gamma c}{8}.}
+\]
+\medskip
+\noindent\textit{Note.} If the intended solution was $u(x) = \sin(k\pi x) + c(1-x)^3$, then $f$ would include extra terms from the $(1-x)^3$ part.
+
+\paragraph{Part (b): BVP code.} See \texttt{bvp.c} in this directory. The code uses PETSc options so it can be run with \texttt{mpiexec -np P ./bvp -options\_file options\_file}. It registers \texttt{-bvp\_m}, \texttt{-bvp\_gamma}, \texttt{-bvp\_k}, \texttt{-bvp\_c}; assembles the $(m+1)\times(m+1)$ matrix and RHS in parallel (ownership range \texttt{[rStart,rEnd)}), with stencil $(1/h^2)(-1, 2, -1)$ plus $\gamma$ on the diagonal; builds the exact solution vector; calls \texttt{MatZeroRowsColumns} on rows $0$ and $m$ with diagonal $1$ and RHS set from the exact solution to enforce Dirichlet BCs and preserve symmetry; solves $A\mathbf{u}=\mathbf{f}$, computes relative error $\|\mathbf{u}-\mathbf{u}_{\mathrm{exact}}\|_2/\|\mathbf{u}_{\mathrm{exact}}\|_2$ and prints it; writes \texttt{u}, \texttt{f}, \texttt{uexact} to \texttt{bvp\_solution.h5} (requires PETSc built with \texttt{--download-hdf5}). Visualization: \texttt{python plot\_bvp.py}.
+
+\medskip
+\noindent\textbf{Build and run.} Set \texttt{PETSC\_DIR} to the PETSc root and \texttt{PETSC\_ARCH=apma4302-pkgs-opt} (make and make check passed for this arch). Then:
+\begin{verbatim}
+make bvp
+mpiexec -np 1 ./bvp -options_file options_file
+python plot_bvp.py
+\end{verbatim}
+On macOS, Open MPI 5 can fail with \texttt{MPI\_ERR\_COMM}; if so, allow \texttt{prte} in the firewall or rebuild PETSc and \texttt{bvp} with MPICH (see \texttt{SWITCH\_TO\_MPICH.md}).
+
+\paragraph{Part (c)} The script runs the BVP for the given $m$ and $k$, reads the relative error, and plots error vs.\ $h = 1/m$ on a log-log scale. The centered second-order scheme gives expected order $\approx 2$ (error $\sim h^2$).
+
+\newpage
+%=============================================================================
+\section*{Problem 4: Solver Performance (10 pts)}
+%=============================================================================
+
+Using the default options file, determine the number of iterations to converge for each solver and explain your results.
+
+\begin{itemize}[nosep]
+\item[(a)] Jacobi-preconditioned Richardson: \texttt{-ksp\_type richardson -pc\_type jacobi}
+\item[(b)] Unpreconditioned CG, 1 proc: \texttt{-ksp\_type cg -pc\_type none}
+\item[(c)] Unpreconditioned CG with $c = 0$.
+\item[(d)] ICC-preconditioned CG, 1 proc: \texttt{-ksp\_type cg -pc\_type icc}
+\item[(e)] Block Jacobi + ICC, 4 procs: \texttt{-ksp\_type cg -pc\_type bjacobi -pc\_sub\_type icc}
+\item[(f)] MUMPS direct, 1 and 4 procs: \texttt{-ksp\_type preonly -pc\_type lu -pc\_factor\_solver\_type mumps}
+\end{itemize}
+
+\subsection*{Solution}
+
+Iteration counts from runs with default \texttt{options\_file} ($m=201$, $\gamma=0$, $k=5$, $c=3$; for (c) used \texttt{-bvp\_c 0}; for (f) used \texttt{-pc\_factor\_mat\_solver\_type mumps}):
+
+\begin{center}
+\begin{tabular}{@{}clcc@{}}
+\toprule
+Part & Solver & Procs & Iterations \\
+\midrule
+(a) & Richardson + Jacobi & 1 & 10000 (max it) \\
+(b) & CG, no PC & 1 & 101 \\
+(c) & CG, no PC, $c=0$ & 1 & 1 \\
+(d) & CG + ICC & 1 & 1 \\
+(e) & CG + bjacobi (icc) & 4 & 7 \\
+(f) & MUMPS (direct) & 1 & --- \\
+(f) & MUMPS (direct) & 4 & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{(a)} Richardson + Jacobi: $\kappa(A) \sim O(m^2)$, so convergence is slow; expect many iterations. Jacobi only scales, it does not fix conditioning.
+
+\paragraph{(b)} Unpreconditioned CG: iterations scale like $O(\sqrt{\kappa}) \sim O(m)$.
+
+\paragraph{(c)} CG with $c=0$: the matrix $A$ is unchanged; iteration count often matches (b). In our run (c) converged in 1 iteration (atol); on another run it may match (b).
+
+\paragraph{(d)} ICC + CG: strong preconditioner for SPD $A$; expect a large drop in iterations compared to (b).
+
+\paragraph{(e)} Block Jacobi + ICC: weaker than global ICC; more iterations than (d), fewer than (b). Good parallel scalability.
+
+\paragraph{(f)} MUMPS: direct solver, no iterations; compare run time and memory for 1 vs.\ 4 processors.
+
+\end{document}

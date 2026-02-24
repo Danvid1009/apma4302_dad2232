@@ -1,0 +1,4 @@
+# Source this to set PETSc for pkgs-opt (make and make check passed in petsc):
+#   source env_pkgs_opt
+export PETSC_DIR=/Users/dan/Desktop/Columbia/HPC_4302/petsc
+export PETSC_ARCH=apma4302-pkgs-opt

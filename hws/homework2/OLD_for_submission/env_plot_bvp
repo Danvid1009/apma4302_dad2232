@@ -1,0 +1,12 @@
+# Source this before running plot_bvp.py so Python finds petsc4py and numpy.
+# plot_bvp.py needs: numpy, petsc4py (from PETSc pkgs-opt build)
+
+export PETSC_DIR=/Users/dan/Desktop/Columbia/HPC_4302/petsc
+export PETSC_ARCH=apma4302-pkgs-opt
+
+# petsc4py is installed at $PETSC_DIR/$PETSC_ARCH/lib/petsc4py
+# Python finds it if the *parent* of that folder is on PYTHONPATH:
+export PYTHONPATH="${PETSC_DIR}/${PETSC_ARCH}/lib:${PYTHONPATH:-}"
+
+# Use Python 3.9 (petsc4py was built for 3.9). If your default python3 is 3.9, you're set.
+# Run: python3 plot_bvp.py   (after bvp has produced bvp_solution.h5)
