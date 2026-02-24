@@ -1,0 +1,1 @@
+mpicc -o bvp.o -c -fPIC -Wall -Wwrite-strings -Wno-unknown-pragmas -Wconversion -Wno-sign-conversion -Wno-float-conversion -Wno-implicit-float-conversion -fstack-protector -fno-stack-check -Qunused-arguments -fvisibility=hidden -O3 -march=native  -I/Users/dan/Desktop/Columbia/HPC_4302/petsc/include -I/Users/dan/Desktop/Columbia/HPC_4302/petsc/apma4302-base-opt/include    bvp.c
