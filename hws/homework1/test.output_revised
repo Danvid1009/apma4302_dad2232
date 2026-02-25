@@ -1,0 +1,367 @@
+mpicc -o expx.o -c -fPIC -Wall -Wwrite-strings -Wno-unknown-pragmas -Wconversion -Wno-sign-conversion -Wno-float-conversion -Wno-implicit-float-conversion -fstack-protector -fno-stack-check -Qunused-arguments -fvisibility=hidden -O3 -march=native -pedantic -std=c99 -I/Users/mspieg/Repos/gitlab/petsc/include -I/Users/mspieg/Repos/gitlab/petsc/apma4302-pkgs-opt/include -I/opt/X11/include    expx.c
+mpicc -Wl,-commons,use_dylibs -Wl,-search_paths_first -Wl,-no_compact_unwind -Wl,-no_warn_duplicate_libraries  -fPIC -Wall -Wwrite-strings -Wno-unknown-pragmas -Wconversion -Wno-sign-conversion -Wno-float-conversion -Wno-implicit-float-conversion -fstack-protector -fno-stack-check -Qunused-arguments -fvisibility=hidden -O3 -march=native -pedantic -std=c99 -o expx expx.o -Wl,-rpath,/Users/mspieg/Repos/gitlab/petsc/apma4302-pkgs-opt/lib -L/Users/mspieg/Repos/gitlab/petsc/apma4302-pkgs-opt/lib -Wl,-rpath,/opt/X11/lib -L/opt/X11/lib -Wl,-rpath,/opt/homebrew/Cellar/open-mpi/5.0.9/lib -L/opt/homebrew/Cellar/open-mpi/5.0.9/lib -Wl,-rpath,/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15 -L/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15 -Wl,-rpath,/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc -L/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc -Wl,-rpath,/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current -L/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current -lpetsc -lHYPRE -ldmumps -lmumps_common -lpord -lpthread -lscalapack -llapack -lblas -lhdf5_hl -lhdf5 -lparmetis -lmetis -lX11 -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lgfortran -lemutls_w -lheapt_w -lgfortran -lquadmath -lc++
+/bin/rm -f expx.o
+Compiling expx code...
+Compilation successful!
+Running basic functionality tests...
+Testing with x = -709.0, N = 2866
+	np=1, result=rank 0 did 2866 terms
+exp(x) is about 1.2167807506234205e-308  (x=-709., N=2866, nP=1, relerr=2.030216e-15, relerr/eps=9.143282)
+
+	np=2, result=rank 1 did 1433 terms
+rank 0 did 1433 terms
+exp(x) is about 1.2167807506234205e-308  (x=-709., N=2866, nP=2, relerr=2.030216e-15, relerr/eps=9.143282)
+
+	np=4, result=rank 1 did 717 terms
+rank 0 did 716 terms
+exp(x) is about 1.2167807506234363e-308  (x=-709., N=2866, nP=4, relerr=1.096317e-14, relerr/eps=49.373722)
+rank 3 did 717 terms
+rank 2 did 716 terms
+
+	np=8, result=rank 6 did 358 terms
+rank 2 did 358 terms
+rank 4 did 358 terms
+rank 0 did 358 terms
+exp(x) is about 1.2167807506233498e-308  (x=-709., N=2866, nP=8, relerr=6.009441e-14, relerr/eps=270.641141)
+rank 5 did 358 terms
+rank 1 did 358 terms
+rank 7 did 359 terms
+rank 3 did 359 terms
+
+Testing with x = -500.0, N = 2030
+	np=1, result=rank 0 did 2030 terms
+exp(x) is about 7.1245764067412664e-218  (x=-500., N=2030, nP=1, relerr=2.683972e-15, relerr/eps=12.087533)
+
+	np=2, result=rank 0 did 1015 terms
+rank 1 did 1015 terms
+exp(x) is about 7.1245764067412664e-218  (x=-500., N=2030, nP=2, relerr=2.683972e-15, relerr/eps=12.087533)
+
+	np=4, result=rank 3 did 508 terms
+rank 2 did 507 terms
+rank 0 did 507 terms
+exp(x) is about 7.1245764067419105e-218  (x=-500., N=2030, nP=4, relerr=8.772349e-14, relerr/eps=395.071483)
+rank 1 did 508 terms
+
+	np=8, result=rank 5 did 254 terms
+rank 0 did 253 terms
+exp(x) is about 7.1245764067424459e-218  (x=-500., N=2030, nP=8, relerr=1.628747e-13, relerr/eps=733.522415)
+rank 2 did 254 terms
+rank 7 did 254 terms
+rank 4 did 253 terms
+rank 3 did 254 terms
+rank 6 did 254 terms
+rank 1 did 254 terms
+
+Testing with x = -100.0, N = 430
+	np=1, result=rank 0 did 430 terms
+exp(x) is about 3.7200759760208336e-44  (x=-100., N=430, nP=1, relerr=6.691278e-16, relerr/eps=3.013484)
+
+	np=2, result=rank 1 did 215 terms
+rank 0 did 215 terms
+exp(x) is about 3.7200759760208336e-44  (x=-100., N=430, nP=2, relerr=6.691278e-16, relerr/eps=3.013484)
+
+	np=4, result=rank 1 did 108 terms
+rank 3 did 108 terms
+rank 0 did 107 terms
+exp(x) is about 3.7200759760208117e-44  (x=-100., N=430, nP=4, relerr=6.557452e-15, relerr/eps=29.532139)
+rank 2 did 107 terms
+
+	np=8, result=rank 7 did 54 terms
+rank 2 did 54 terms
+rank 6 did 54 terms
+rank 4 did 53 terms
+rank 5 did 54 terms
+rank 3 did 54 terms
+rank 1 did 54 terms
+rank 0 did 53 terms
+exp(x) is about 3.7200759760207296e-44  (x=-100., N=430, nP=8, relerr=2.863867e-14, relerr/eps=128.977095)
+
+Testing with x = -50.0, N = 230
+	np=1, result=rank 0 did 230 terms
+exp(x) is about 1.9287498479639145e-22  (x=-50., N=230, nP=1, relerr=1.706486e-15, relerr/eps=7.685329)
+
+	np=2, result=rank 1 did 115 terms
+rank 0 did 115 terms
+exp(x) is about 1.9287498479639141e-22  (x=-50., N=230, nP=2, relerr=1.950269e-15, relerr/eps=8.783233)
+
+	np=4, result=rank 3 did 58 terms
+rank 0 did 57 terms
+exp(x) is about 1.9287498479639169e-22  (x=-50., N=230, nP=4, relerr=4.875674e-16, relerr/eps=2.195808)
+rank 2 did 57 terms
+rank 1 did 58 terms
+
+	np=8, result=rank 1 did 29 terms
+rank 3 did 29 terms
+rank 7 did 29 terms
+rank 0 did 28 terms
+exp(x) is about 1.9287498479639336e-22  (x=-50., N=230, nP=8, relerr=8.166753e-15, relerr/eps=36.779787)
+rank 6 did 29 terms
+rank 5 did 29 terms
+rank 4 did 28 terms
+rank 2 did 29 terms
+
+Testing with x = -10.0, N = 70
+	np=1, result=rank 0 did 70 terms
+exp(x) is about 4.5399929762484854e-05  (x=-10., N=70, nP=1, relerr=0.000000e+00, relerr/eps=0.000000)
+
+	np=2, result=rank 1 did 35 terms
+rank 0 did 35 terms
+exp(x) is about 4.5399929762484841e-05  (x=-10., N=70, nP=2, relerr=2.985143e-16, relerr/eps=1.344389)
+
+	np=4, result=rank 2 did 17 terms
+rank 3 did 18 terms
+rank 0 did 17 terms
+exp(x) is about 4.5399929762484834e-05  (x=-10., N=70, nP=4, relerr=4.477714e-16, relerr/eps=2.016583)
+rank 1 did 18 terms
+
+	np=8, result=rank 4 did 8 terms
+rank 7 did 9 terms
+rank 1 did 9 terms
+rank 2 did 9 terms
+rank 0 did 8 terms
+exp(x) is about 4.5399929762484739e-05  (x=-10., N=70, nP=8, relerr=2.537371e-15, relerr/eps=11.427305)
+rank 3 did 9 terms
+rank 6 did 9 terms
+rank 5 did 9 terms
+
+Testing with x = -1.0, N = 34
+	np=1, result=rank 0 did 34 terms
+exp(x) is about 0.36787944117144228  (x=-1., N=34, nP=1, relerr=1.508950e-16, relerr/eps=0.679570)
+
+	np=2, result=rank 1 did 17 terms
+rank 0 did 17 terms
+exp(x) is about 0.36787944117144222  (x=-1., N=34, nP=2, relerr=3.017899e-16, relerr/eps=1.359141)
+
+	np=4, result=rank 3 did 9 terms
+rank 2 did 8 terms
+rank 1 did 9 terms
+rank 0 did 8 terms
+exp(x) is about 0.36787944117144228  (x=-1., N=34, nP=4, relerr=1.508950e-16, relerr/eps=0.679570)
+
+	np=8, result=rank 4 did 4 terms
+rank 6 did 4 terms
+rank 2 did 4 terms
+rank 0 did 4 terms
+exp(x) is about 0.36787944117144233  (x=-1., N=34, nP=8, relerr=0.000000e+00, relerr/eps=0.000000)
+rank 3 did 5 terms
+rank 1 did 4 terms
+rank 7 did 5 terms
+rank 5 did 4 terms
+
+Testing with x = -0.1, N = 30
+	np=1, result=rank 0 did 30 terms
+exp(x) is about 0.90483741803595985  (x=-0.1, N=30, nP=1, relerr=3.680959e-16, relerr/eps=1.657756)
+
+	np=2, result=rank 0 did 15 terms
+rank 1 did 15 terms
+exp(x) is about 0.90483741803595985  (x=-0.1, N=30, nP=2, relerr=3.680959e-16, relerr/eps=1.657756)
+
+	np=4, result=rank 2 did 7 terms
+rank 1 did 8 terms
+rank 0 did 7 terms
+exp(x) is about 0.90483741803595963  (x=-0.1, N=30, nP=4, relerr=1.226986e-16, relerr/eps=0.552585)
+rank 3 did 8 terms
+
+	np=8, result=rank 5 did 4 terms
+rank 3 did 4 terms
+rank 2 did 4 terms
+rank 1 did 4 terms
+rank 4 did 3 terms
+rank 6 did 4 terms
+rank 0 did 3 terms
+exp(x) is about 0.90483741803595952  (x=-0.1, N=30, nP=8, relerr=0.000000e+00, relerr/eps=0.000000)
+rank 7 did 4 terms
+
+Testing with x = 0.0, N = 30
+	np=1, result=rank 0 did 30 terms
+exp(x) is about 1  (x=0., N=30, nP=1, relerr=0.000000e+00, relerr/eps=0.000000)
+
+	np=2, result=rank 1 did 15 terms
+rank 0 did 15 terms
+exp(x) is about 1  (x=0., N=30, nP=2, relerr=0.000000e+00, relerr/eps=0.000000)
+
+	np=4, result=rank 2 did 7 terms
+rank 1 did 8 terms
+rank 0 did 7 terms
+exp(x) is about 1  (x=0., N=30, nP=4, relerr=0.000000e+00, relerr/eps=0.000000)
+rank 3 did 8 terms
+
+	np=8, result=rank 3 did 4 terms
+rank 2 did 4 terms
+rank 0 did 3 terms
+exp(x) is about 1  (x=0., N=30, nP=8, relerr=0.000000e+00, relerr/eps=0.000000)
+rank 7 did 4 terms
+rank 1 did 4 terms
+rank 4 did 3 terms
+rank 6 did 4 terms
+rank 5 did 4 terms
+
+Testing with x = 0.1, N = 30
+	np=1, result=rank 0 did 30 terms
+exp(x) is about 1.1051709180756473  (x=0.1, N=30, nP=1, relerr=4.018285e-16, relerr/eps=1.809675)
+
+	np=2, result=rank 1 did 15 terms
+rank 0 did 15 terms
+exp(x) is about 1.1051709180756473  (x=0.1, N=30, nP=2, relerr=4.018285e-16, relerr/eps=1.809675)
+
+	np=4, result=rank 3 did 8 terms
+rank 0 did 7 terms
+exp(x) is about 1.1051709180756475  (x=0.1, N=30, nP=4, relerr=2.009143e-16, relerr/eps=0.904837)
+rank 2 did 7 terms
+rank 1 did 8 terms
+
+	np=8, result=rank 6 did 4 terms
+rank 2 did 4 terms
+rank 4 did 3 terms
+rank 1 did 4 terms
+rank 5 did 4 terms
+rank 7 did 4 terms
+rank 3 did 4 terms
+rank 0 did 3 terms
+exp(x) is about 1.1051709180756477  (x=0.1, N=30, nP=8, relerr=0.000000e+00, relerr/eps=0.000000)
+
+Testing with x = 1.0, N = 34
+	np=1, result=rank 0 did 34 terms
+exp(x) is about 2.7182818284590455  (x=1., N=34, nP=1, relerr=1.633713e-16, relerr/eps=0.735759)
+
+	np=2, result=rank 0 did 17 terms
+exp(x) is about 2.718281828459046  (x=1., N=34, nP=2, relerr=3.267426e-16, relerr/eps=1.471518)
+rank 1 did 17 terms
+
+	np=4, result=rank 3 did 9 terms
+rank 2 did 8 terms
+rank 1 did 9 terms
+rank 0 did 8 terms
+exp(x) is about 2.7182818284590455  (x=1., N=34, nP=4, relerr=1.633713e-16, relerr/eps=0.735759)
+
+	np=8, result=rank 5 did 4 terms
+rank 7 did 5 terms
+rank 3 did 5 terms
+rank 2 did 4 terms
+rank 1 did 4 terms
+rank 4 did 4 terms
+rank 0 did 4 terms
+exp(x) is about 2.7182818284590451  (x=1., N=34, nP=8, relerr=0.000000e+00, relerr/eps=0.000000)
+rank 6 did 4 terms
+
+Testing with x = 10.0, N = 70
+	np=1, result=rank 0 did 70 terms
+exp(x) is about 22026.465794806714  (x=10., N=70, nP=1, relerr=1.651640e-16, relerr/eps=0.743832)
+
+	np=2, result=rank 1 did 35 terms
+rank 0 did 35 terms
+exp(x) is about 22026.465794806722  (x=10., N=70, nP=2, relerr=1.651640e-16, relerr/eps=0.743832)
+
+	np=4, result=rank 0 did 17 terms
+exp(x) is about 22026.465794806725  (x=10., N=70, nP=4, relerr=3.303280e-16, relerr/eps=1.487665)
+rank 2 did 17 terms
+rank 3 did 18 terms
+rank 1 did 18 terms
+
+	np=8, result=rank 5 did 9 terms
+rank 1 did 9 terms
+rank 4 did 8 terms
+rank 2 did 9 terms
+rank 7 did 9 terms
+rank 6 did 9 terms
+rank 0 did 8 terms
+exp(x) is about 22026.465794806772  (x=10., N=70, nP=8, relerr=2.477460e-15, relerr/eps=11.157487)
+rank 3 did 9 terms
+
+Testing with x = 50.0, N = 230
+	np=1, result=rank 0 did 230 terms
+exp(x) is about 5.1847055285870815e+21  (x=50., N=230, nP=1, relerr=1.820197e-15, relerr/eps=8.197437)
+
+	np=2, result=rank 1 did 115 terms
+rank 0 did 115 terms
+exp(x) is about 5.1847055285870825e+21  (x=50., N=230, nP=2, relerr=2.022441e-15, relerr/eps=9.108264)
+
+	np=4, result=rank 2 did 57 terms
+rank 3 did 58 terms
+rank 0 did 57 terms
+exp(x) is about 5.1847055285870752e+21  (x=50., N=230, nP=4, relerr=6.067322e-16, relerr/eps=2.732479)
+rank 1 did 58 terms
+
+	np=8, result=rank 1 did 29 terms
+rank 4 did 28 terms
+rank 5 did 29 terms
+rank 3 did 29 terms
+rank 7 did 29 terms
+rank 2 did 29 terms
+rank 0 did 28 terms
+exp(x) is about 5.1847055285870301e+21  (x=50., N=230, nP=8, relerr=8.089763e-15, relerr/eps=36.433055)
+rank 6 did 29 terms
+
+Testing with x = 100.0, N = 430
+	np=1, result=rank 0 did 430 terms
+exp(x) is about 2.6881171418161371e+43  (x=100., N=430, nP=1, relerr=5.526277e-16, relerr/eps=2.488814)
+
+	np=2, result=rank 1 did 215 terms
+rank 0 did 215 terms
+exp(x) is about 2.6881171418161371e+43  (x=100., N=430, nP=2, relerr=5.526277e-16, relerr/eps=2.488814)
+
+	np=4, result=rank 3 did 108 terms
+rank 1 did 108 terms
+rank 2 did 107 terms
+rank 0 did 107 terms
+exp(x) is about 2.6881171418161529e+43  (x=100., N=430, nP=4, relerr=6.447323e-15, relerr/eps=29.036163)
+
+	np=8, result=rank 1 did 54 terms
+rank 5 did 54 terms
+rank 4 did 53 terms
+rank 3 did 54 terms
+rank 6 did 54 terms
+rank 0 did 53 terms
+exp(x) is about 2.6881171418162124e+43  (x=100., N=430, nP=8, relerr=2.855243e-14, relerr/eps=128.588723)
+rank 7 did 54 terms
+rank 2 did 54 terms
+
+Testing with x = 500.0, N = 2030
+	np=1, result=rank 0 did 2030 terms
+exp(x) is about 1.4035922178528412e+217  (x=500., N=2030, nP=1, relerr=2.617685e-15, relerr/eps=11.789006)
+
+	np=2, result=rank 0 did 1015 terms
+exp(x) is about 1.4035922178528412e+217  (x=500., N=2030, nP=2, relerr=2.617685e-15, relerr/eps=11.789006)
+rank 1 did 1015 terms
+
+	np=4, result=rank 1 did 508 terms
+rank 3 did 508 terms
+rank 0 did 507 terms
+exp(x) is about 1.4035922178527143e+217  (x=500., N=2030, nP=4, relerr=8.777971e-14, relerr/eps=395.324661)
+rank 2 did 507 terms
+
+	np=8, result=rank 2 did 254 terms
+rank 7 did 254 terms
+rank 0 did 253 terms
+exp(x) is about 1.4035922178526087e+217  (x=500., N=2030, nP=8, relerr=1.629945e-13, relerr/eps=734.062094)
+rank 1 did 254 terms
+rank 6 did 254 terms
+rank 5 did 254 terms
+rank 4 did 253 terms
+rank 3 did 254 terms
+
+Testing with x = 709.0, N = 2866
+	np=1, result=rank 0 did 2866 terms
+exp(x) is about 8.2184074615549893e+307  (x=709., N=2866, nP=1, relerr=2.064225e-15, relerr/eps=9.296443)
+
+	np=2, result=rank 1 did 1433 terms
+rank 0 did 1433 terms
+exp(x) is about 8.2184074615549893e+307  (x=709., N=2866, nP=2, relerr=2.064225e-15, relerr/eps=9.296443)
+
+	np=4, result=rank 1 did 717 terms
+rank 3 did 717 terms
+rank 2 did 716 terms
+rank 0 did 716 terms
+exp(x) is about 8.2184074615548836e+307  (x=709., N=2866, nP=4, relerr=1.080683e-14, relerr/eps=48.669614)
+
+	np=8, result=rank 7 did 359 terms
+rank 5 did 358 terms
+rank 3 did 359 terms
+rank 1 did 358 terms
+rank 2 did 358 terms
+rank 0 did 358 terms
+exp(x) is about 8.2184074615554654e+307  (x=709., N=2866, nP=8, relerr=5.998395e-14, relerr/eps=270.143703)
+rank 4 did 358 terms
+rank 6 did 358 terms
+
+All tests passed!

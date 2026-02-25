@@ -76,9 +76,10 @@ int main(int argc, char **argv) {
   /* Per-rank report (like e.c): each rank prints how many terms it computed; order may vary. */
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %d did %d terms\n", rank, (int)(kEnd - kStart)));
   /* Collective: one line for the result (printed by rank 0). */
+  // prof spiegelman:  aded output for relative error and relative error divided by machine epsilon
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,
-      "exp(x) is about %.17g  (x=%g, N=%" PetscInt_FMT ", nP=%d, relerr=%.6e)\n",
-      (double)approx, (double)x, N, (int)size, (double)relerr));
+      "exp(x) is about %.17g  (x=%g, N=%" PetscInt_FMT ", nP=%d, relerr=%.6e, relerr/eps=%f)\n",
+      (double)approx, (double)x, N, (int)size, (double)relerr, relerr/PETSC_MACHINE_EPSILON));
 
   PetscCall(PetscFinalize());
   return 0;
