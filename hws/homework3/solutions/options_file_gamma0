@@ -1,0 +1,18 @@
+# APMA 4302 HW3 Part 4 — gamma = 0, 65x65 (default 9x9 DMDA + -da_refine 3)
+# Run from p4pdes/c/ch4, e.g.:
+#   mpirun -n 2 ./reaction2d -options_file /path/to/options_file_gamma0
+#
+-rct_gamma 0
+-rct_p 3
+-rct_zero_initial
+-da_refine 3
+-snes_type newtonls
+-snes_max_it 10
+-snes_atol 1e-12
+-snes_rtol 0
+-snes_converged_reason
+-snes_monitor
+-ksp_monitor
+-ksp_type preonly
+-pc_type lu
+-pc_factor_mat_solver_type mumps
