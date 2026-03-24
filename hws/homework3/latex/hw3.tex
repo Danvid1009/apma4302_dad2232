@@ -298,7 +298,20 @@ Nonlinear problem ($\gamma=100$, $p=3$) with the same direct linear solver as ab
   \end{tabular}
 \end{table}
 
+\paragraph{Visual summary.}
+The next figure shows the same scaling experiment on log--log axes (base $9\times 9$ \texttt{DMDA} with \texttt{-da\_refine} $2,\ldots,6$, so $N=33,\ldots,513$). Wall times come from \texttt{/usr/bin/time -p} on a laptop; they are useful for trends but noisy at sub-second scale.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{scaling_runtime_error.png}
+  \caption{\textbf{Left:} wall-clock time vs.\ $N$ for $n_p\in\{1,2,4\}$ MPI processes. All curves rise with $N$ as the sparse-direct factorization and solve work grow; the three lines stay close because the problem is small and parallel overhead can offset gains. \textbf{Right:} relative error $\|\mathbf{u}-\mathbf{u}_{\mathrm{exact}}\|_2/\|\mathbf{u}_{\mathrm{exact}}\|_2$ vs.\ $N$ (any $n_p$; same discrete solution). The dashed curve is an $O(h^2)$ template $\propto N^{-2}$ fixed to match the finest-grid error---the measured points lie near it, consistent with a second-order stencil. Regenerate with \texttt{solutions/plot\_scaling\_figures.py}.}
+  \label{fig:scaling_hw3}
+\end{figure}
+
+\paragraph{Interpretation.}
+The left panel makes the \emph{weak-scaling} trend in problem size explicit: time increases superlinearly in this range as $N$ grows. The right panel isolates \emph{accuracy}: each refinement roughly quarters the error when $h$ is halved. The left panel is \emph{not} a clean strong-scaling speedup study---for that, $N$ should be large enough that parallel factorization dominates and/or an iterative preconditioned Krylov solver should replace full sparse LU.
+
 \paragraph{Comments.}
-\textbf{Problem size:} relative discretization error shrinks roughly by a factor of four when $h$ is halved, consistent with a second-order scheme. \textbf{Strong scaling:} for these small test cases the LU factorization and sequential phases dominate, so increasing ranks does not reduce wall time much (sometimes slightly worse due to communication). A fair scaling study would use larger grids, iterative solvers with domain decomposition, and/or a cluster where direct solves are the bottleneck at scale.
+\textbf{Problem size:} relative discretization error shrinks roughly by a factor of four when $h$ is halved, consistent with a second-order scheme (Fig.~\ref{fig:scaling_hw3}, right). \textbf{Strong scaling:} for these small test cases the LU factorization and sequential phases dominate, so increasing ranks does not reduce wall time much (sometimes slightly worse due to communication). A fair scaling study would use larger grids, iterative solvers with domain decomposition, and/or a cluster where direct solves are the bottleneck at scale.
 
   \end{document}
