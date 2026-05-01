@@ -5,9 +5,9 @@ import argparse
 import os
 import sys
 
-from petsc4py import PETSc
+import petsc4py
 
-PETSc.Sys.setArgv(sys.argv)
+petsc4py.init(sys.argv)
 from firedrake import *  # noqa: E402
 
 
