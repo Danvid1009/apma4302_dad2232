@@ -43,6 +43,24 @@ All homework paths below assume you are at the **repository root** or use absolu
 
 Activate your course / lab Firedrake environment the same way you do for other homework (e.g. `source firedrake/bin/activate` or module load + venv — **use whatever your container documents**).
 
+### Cluster: Apptainer / Singularity (`firedrake-ts.sif`)
+
+Host `python3` usually has **no** `petsc4py` / Firedrake. The `run_q2.sh` / `run_q3.sh` / `run_q4.sh` scripts can run **`python3` inside the image** when you set:
+
+```bash
+export HW4_APPTAINER_SIF=/insomnia001/home/dad2232/firedrake-ts.sif
+export HW4_APPTAINER_BIND=/insomnia001/home/dad2232:/insomnia001/home/dad2232
+```
+
+Optional:
+
+- `FIREDRAKE_TS_SIF` — used if `HW4_APPTAINER_SIF` is empty (same path).
+- `HW4_APPTAINER_RUNNER` — default: `apptainer`, else `singularity` if only that exists.
+- `HW4_APPTAINER_EXTRA_ARGS` — e.g. `--nv` passed before `--bind`.
+- `HW4_APPTAINER_UNSET_SLURM=1` — unset all `SLURM_*` in the script before `apptainer exec` if Open MPI still tries Slurm PMI and crashes.
+
+The scripts set `OMPI_MCA_plm=isolated` by default when using the SIF (helps under interactive `srun`).
+
 ---
 
 ## 4) Recommended run order
@@ -60,6 +78,12 @@ export PETSC_DIR=/path/to/petsc
 export PETSC_ARCH=your-arch   # if your PETSc install uses PETSC_ARCH
 
 hw4/scripts/run_q2.sh
+```
+
+**Python-only on a cluster** (no PETSc for C): set the Apptainer variables in §3b, then:
+
+```bash
+SKIP_HW4_C=1 hw4/scripts/run_q2.sh
 ```
 
 - C logs: `hw4/output/logs/q2_c_*.log`
