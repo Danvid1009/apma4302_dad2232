@@ -1,0 +1,8 @@
+.DS_Store
+# duplicate export
+hw3 (1).pdf
+# local PETSc build outputs (rebuild with makefile)
+poisson2d/poisson2d
+poisson2d/poisson.vtr
+# intermediate LaTeX build; submission PDF is Solutions_Daniel_HW3_4302.pdf
+latex/hw3.pdf

@@ -1,0 +1,28 @@
+APMA 4302 HW3 Part 8 — sample scaling runs (reaction2d, gamma=100, p=3)
+Machine: local; PETSc direct solve: -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps
+SNES: -snes_max_it 20 -snes_atol 1e-12 -snes_rtol 0
+
+Columns: da_refine, procs, wall_sec(real), SNES_iters, rel_L2_error
+
+refine=2  np=1  real=0.25  SNES=2  rel_err=8.09754e-04   (33x33)
+refine=2  np=2  real=0.21  SNES=2  rel_err=8.09754e-04
+refine=2  np=4  real=0.21  SNES=2  rel_err=8.09754e-04
+
+refine=3  np=1  real=0.19  SNES=2  rel_err=2.02508e-04   (65x65)
+refine=3  np=2  real=0.19  SNES=2  rel_err=2.02508e-04
+refine=3  np=4  real=0.22  SNES=2  rel_err=2.02508e-04
+
+refine=4  np=1  real=0.25  SNES=2  rel_err=5.06487e-05   (129x129)
+refine=4  np=2  real=0.27  SNES=2  rel_err=5.06487e-05
+refine=4  np=4  real=0.33  SNES=2  rel_err=5.06487e-05
+
+refine=5  np=1  real=0.52  SNES=2  rel_err=1.26657e-05   (257x257)
+refine=5  np=2  real=0.50  SNES=2  rel_err=1.26657e-05
+refine=5  np=4  real=0.51  SNES=2  rel_err=1.26657e-05
+
+refine=6  np=1  real=1.55  SNES=1  rel_err=3.16692e-06   (513x513)
+refine=6  np=2  real=1.43  SNES=1  rel_err=3.16692e-06
+refine=6  np=4  real=1.39  SNES=1  rel_err=3.16692e-06
+
+Note: Wall times from /usr/bin/time -p are coarse for small jobs; use -log_view for detailed events.
+At refine=6 SNES reported 1 iteration because the initial iterate (u_exact) already produced ||F|| below -snes_atol.

@@ -1,0 +1,15 @@
+# APMA 4302 HW3 Part 5 — same linear (gamma=0) setup as Part 4 but finite-difference Jacobian
+# Compare runtime with user Jacobian using:  /usr/bin/time -p mpirun ... -log_view
+#
+-rct_gamma 0
+-rct_p 3
+-rct_zero_initial
+-da_refine 3
+-snes_type newtonls
+-snes_max_it 10
+-snes_atol 1e-12
+-snes_rtol 0
+-snes_fd_color
+-snes_converged_reason
+-ksp_type preonly
+-pc_type lu

@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Users/dan/Desktop/Columbia/HPC_4302/apma4302-methods/homework/hw4/python/biharm.py", line 4, in <module>
+    import firedrake_ts
+ModuleNotFoundError: No module named 'firedrake_ts'
