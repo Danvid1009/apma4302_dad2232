@@ -146,6 +146,25 @@ cd hw4/python
 python3 convection.py --help
 ```
 
+### Extra credit (bonus)
+
+From `hw4/` with Firedrake (+ `firedrake-ts` for the sweep, since it calls `convection.py`):
+
+```bash
+chmod +x scripts/run_bonus.sh
+
+# (1) Mesh × Ra sweep → python/output/bonus_convergence/summary_nu_final.csv
+# Dry-run prints commands only:
+./scripts/run_bonus.sh sweep --dry-run
+# Real run (expensive: 12 DAE jobs by default). Increase --t-max for steadier Nu.
+./scripts/run_bonus.sh sweep --t-max 8000 --nu-every 200
+
+# (3) Crank–Nicolson + SNES per step (plain Firedrake; no firedrake-ts)
+./scripts/run_bonus.sh cn --ra 1e4 --n 32 --t-max 500 --dt 0.1
+```
+
+Item **(2)** (PETSc C + `DMDA` + `TS` + fieldsplit) is not scripted here; it would be a new C driver alongside `biharm.c`.
+
 ---
 
 ## 5) If something fails
