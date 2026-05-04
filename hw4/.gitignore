@@ -1,0 +1,22 @@
+# Regenerated run artifacts (keep directory locally; do not require for clone)
+output/
+
+# PETSc binary from hw4/c
+c/biharm
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Local venvs
+.venv/
+
+# LaTeX build noise (sources stay tracked)
+doc/*.aux
+doc/*.log
+doc/*.out
+doc/*.toc
+doc/*.synctex.gz
+doc/*.fdb_latexmk
+doc/*.fls

@@ -2,6 +2,8 @@
 
 Use this on a **login node, compute node, SSH session, or in a Docker/app container** as long as the dependencies for each part are available there.
 
+**Layout:** write-up lives under **`hw4/doc/`** (`solutions.tex`, `hw4.pdf`, `figures/`). Code under **`hw4/c/`**, **`hw4/python/`**, runners under **`hw4/scripts/`**. See `hw4/README.md` and `hw4/doc/SCRIPTS.md`.
+
 ## 1) When the repository is “ready to push”
 
 You (or whoever has write access) should **commit and push** after:
