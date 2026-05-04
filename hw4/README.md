@@ -1,18 +1,81 @@
 # Homework 4 — coupled multiphysics (Firedrake + PETSc)
 
-Layout for submission and `git clone` reproduction:
+Outline of where everything lives and how the pieces connect to the assignment.
 
-| Path | Contents |
-|------|----------|
-| **`doc/`** | Assignment handout (`hw4.tex`), solutions (`solutions.tex`), built **`hw4.pdf`**, scanned handout PNGs under **`doc/figures/`**, LaTeX build notes. |
-| **`c/`** | PETSc finite-difference biharmonic driver (`biharm.c`, `poissonfunctions.*`), `makefile`, `options_file_*`. |
-| **`python/`** | Firedrake drivers: `biharm.py`, `biharm_temperature_rhs.py`, `convection.py`, `convection_cn.py`, `heat.py`, `bonus_convergence_sweep.py`, etc. |
-| **`scripts/`** | `run_q2.sh`, `run_q3.sh`, `run_q4.sh`, `run_bonus.sh`, `inc_firedrake_apptainer.sh`. |
-| **`RUN.md`** | Environment setup, cluster Apptainer notes, and recommended run order. |
-| **`output/`** | Logs, VTK, CSV from runs (see `.gitignore`; regenerate with the scripts). |
+---
 
-**Compile the write-up:** see [`doc/README.md`](doc/README.md).
+## Where everything is
 
-**Run numerics:** start at [`RUN.md`](RUN.md).
+### Top level
 
-**Which scripts match the PDF:** see [`doc/SCRIPTS.md`](doc/SCRIPTS.md).
+| Item | Purpose |
+|------|---------|
+| **`RUN.md`** | Full setup: PETSc/Firedrake, cluster Apptainer env vars, **recommended run order** (Q2 → Q3 → Q4 → bonus). |
+| **`.gitignore`** | Ignores regenerated `output/`, built binary `c/biharm`, LaTeX aux files, `__pycache__/`, local `.venv/`. |
+| **`README.md`** | This file — map of the tree. |
+
+### `doc/` — write-up (LaTeX + PDF + figures)
+
+| Item | Purpose |
+|------|---------|
+| **`hw4.tex`** | Original assignment handout (problem statement). |
+| **`solutions.tex`** | Your solutions document (references code paths below). |
+| **`hw4.pdf`** | Last committed PDF build of the write-up (rebuild from `solutions.tex` if you change content). |
+| **`doc/README.md`** | How to run `pdflatex` on `solutions.tex`. |
+| **`doc/SCRIPTS.md`** | Table mapping each problem / figure mention in the PDF to **repo files** and how to run them. |
+| **`doc/figures/`** | Handout scans (`hw4_*.png`) + optional exported PDFs for placeholders (see `figures/README.md`). |
+
+### `c/` — PETSc (Problem 2a)
+
+| Item | Purpose |
+|------|---------|
+| **`biharm.c`**, **`poissonfunctions.c`**, **`poissonfunctions.h`** | DMDA finite-difference biharmonic + manufactured solution. |
+| **`makefile`** | Build `biharm` (needs `PETSC_DIR` / `PETSC_ARCH`). |
+| **`options_file_*`** | Three solver presets (direct, split+direct, split+MG). |
+| **`*.log`** (if present) | Captured runs from local experiments. |
+
+### `python/` — Firedrake (Problems 2b–4 + extra credit)
+
+| Item | Purpose |
+|------|---------|
+| **`biharm.py`** | FE biharmonic; same three solver presets as Q2a. |
+| **`biharm_temperature_rhs.py`** | Q3: temperature-driven RHS; VTK for ParaView. |
+| **`convection.py`** | Q4: full coupled convection DAE (`firedrake-ts`), Nusselt CSV. |
+| **`heat.py`** | Reference heat / TS example used to build `convection.py`. |
+| **`convection_cn.py`** | Extra (3): Crank–Nicolson + SNES per step. |
+| **`bonus_convergence_sweep.py`** | Extra (1): mesh × Ra sweep. |
+| Other `*.py` | Supporting experiments (e.g. convection variants) as you add them. |
+
+### `scripts/` — one-command runners
+
+| Script | Runs |
+|--------|------|
+| **`run_q2.sh`** | C `biharm` (three options) + Firedrake `biharm.py` (three presets); logs under `output/logs/`. |
+| **`run_q3.sh`** | `biharm_temperature_rhs.py` → VTK under `output/q3/`. |
+| **`run_q4.sh`** | `convection.py` with env vars `RA`, `N`, `TMAX`, `DT`, `HW4_OUT`, etc. |
+| **`run_bonus.sh`** | `sweep` → `bonus_convergence_sweep.py`; `cn` → `convection_cn.py`. |
+| **`inc_firedrake_apptainer.sh`** | Shared helper for running `python3` inside a Firedrake Apptainer image on clusters. |
+
+### `output/` — generated artifacts (not required in clone)
+
+Created by the scripts: logs, VTK/PVD, `nu_history.csv`, bonus CSVs, etc. Regenerate after `git pull` using **`RUN.md`**.
+
+---
+
+## Quick links
+
+- **Build PDF:** [`doc/README.md`](doc/README.md)  
+- **Run all numerics:** [`RUN.md`](RUN.md)  
+- **PDF ↔ code map:** [`doc/SCRIPTS.md`](doc/SCRIPTS.md)
+
+---
+
+## NOT YET COMPLETE
+
+The following are still open relative to a “finished” homework submission (see `doc/solutions.tex` for `\missing{...}` and `\placeholdfig` blocks):
+
+- **Problem 2 (Firedrake):** Fill tables from cluster/Python logs (`q2_py_*.log` or equivalent); optional runtime comparison figure for 2(c).  
+- **Problem 3:** Export ParaView figure to PDF and replace the placeholder (`figures/hw4_q3_T_psi_velocity.pdf` or edit `solutions.tex`).  
+- **Problem 4:** Steady-state / Nusselt discussion for (a)–(c); plots for `Nu(t)`, `Nu` vs mesh vs Blankenbach; mesh sweep numbers.  
+- **Extra credit:** Populate bonus sweep table; optional heatmaps / BDF vs CN overlay figures; PETSc C+TS port (2) remains unimplemented unless you add it.  
+- **PDF rebuild:** After edits, re-run `pdflatex` in `doc/` and refresh `hw4.pdf` if you want the committed PDF to match the latest `solutions.tex`.
