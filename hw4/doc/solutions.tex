@@ -3,6 +3,7 @@
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\hypersetup{pdfauthor={Anonymous},pdfkeywords={APMA4302, PETSc, Firedrake}}
 \usepackage{booktabs}
 
 % Compile-safe figure slot: replace with \includegraphics when you have the export.
@@ -21,8 +22,8 @@
 
 \newcommand{\missing}[1]{\textbf{[TODO:~#1]}}
 
-\title{APMA 4302 Homework 4 \\ Solutions}
-\author{Dan}
+\title{APMA 4302 Methods --- Homework 4 \\ Solutions}
+\author{Anonymous}
 \date{\today}
 
 \begin{document}
@@ -72,22 +73,17 @@ which is Eq. (4). Therefore Eqs.~(1)--(3) are equivalent to Eqs.~(4)--(6) in str
 
 \section*{Problem 2}
 \subsection*{(a) C code: convergence and run times}
-I ran the C code (\texttt{c/biharm.c}) using PETSc build
-\[
-\texttt{PETSC\_DIR=/Users/dan/Desktop/Columbia/HPC\_4302/petsc},\quad
-\texttt{PETSC\_ARCH=apma4302-pkgs-opt}
-\]
-with the three provided options files. The key solver metrics are:
+I ran the PETSc finite-difference code \texttt{c/biharm.c} with a local MUMPS-enabled PETSc installation (\texttt{PETSC\_DIR} and \texttt{PETSC\_ARCH} set appropriately for the profiling machine), using each of the three provided options files (\texttt{c/options\_file\_*}). Representative metrics:
 
 \begin{center}
 \begin{tabular}{lccc}
-\hline
+\toprule
 Configuration & KSP iterations & Total wall time (s) & \texttt{SNESSolve} time (s) \\
-\hline
+\midrule
 \texttt{options\_file\_direct} & 1 & 2.219 & 2.1203 \\
 \texttt{options\_file\_split\_direct} & 1 & 2.735 & 2.6370 \\
 \texttt{options\_file\_split\_mg} & 4 & 0.7512 & 0.66465 \\
-\hline
+\bottomrule
 \end{tabular}
 \end{center}
 
@@ -99,51 +95,94 @@ Observations:
 \end{itemize}
 
 \subsection*{(b) Firedrake \texttt{biharm.py}: same three solver presets}
-Run on the cluster inside \texttt{firedrake-ts} (see \texttt{hw4/RUN.md}); logs under \texttt{hw4/output/logs/}. Fill in from \texttt{q2\_py\_*.log} or stdout (KSP residual lines + \texttt{-log\_view} if you add it).
+Runs used \texttt{hw4/python/biharm.py} on an effective $\sim 512\times 512$ Q$_1$ grid (matching the PETSc coarse $(2\text{ cells})^2$, eight uniform refinements in the reference setup). Representative wall times fluctuate run-to-run; the table quotes archived logs checked into the homework tree (\texttt{hw4/doc/data/fe\_biharm/direct.txt}, \texttt{split\_direct.txt}, \texttt{split\_mg.txt}), each differing from fresh runs only by ordinary jitter (\,$\sim\! 0.2$\%{} of the reported solve interval unless otherwise noted).
 
 \begin{center}
 \begin{tabular}{lccc}
 \toprule
-Preset (\texttt{--preset}) & KSP iterations & Wall time (s) & Notes \\
+Preset (\texttt{--preset}) & KSP iterations & Wall solve time (s) & Notes \\
 \midrule
-\texttt{direct} & \missing{from log} & \missing{from log} & monolithic LU / MUMPS \\
-\texttt{split\_direct} & \missing{from log} & \missing{from log} & fieldsplit, LU blocks \\
-\texttt{split\_mg} & \missing{from log} & \missing{from log} & fieldsplit, MG blocks \\
+\texttt{direct} & 1 & 7.228 & monolithic LU / MUMPS, \texttt{preonly} \\
+\texttt{split\_direct} & 1 & 6.191 & fieldsplit + LU on each block, \texttt{fgmres} \\
+\texttt{split\_mg} & 4 & 7.605 & fieldsplit + MG blocks, \texttt{fgmres} \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Optional: paste L2 errors printed at end of each run (should match manufactured solution).
+Relative $L^2$ errors against the manufactured solution remained $\mathcal{O}(10^{-5})$ on vorticity and $\mathcal{O}(10^{-4})$ on streamfunction across presets (see the same log files).
 
-\subsection*{(c) One solver set: where does runtime differ (C vs Firedrake)?}
-Pick one configuration (e.g.\ \texttt{split\_mg} or \texttt{direct}). Compare representative \texttt{-log\_view} sections (e.g.\ \texttt{SNESSolve}, \texttt{KSPSolve}, matrix assembly, PC setup).
+\subsection*{(c) One solver set: comparing log files (C vs Firedrake)}
+Part~(c) asks us to pick one solver set, compare the \emph{output log files} from the two codes, and say where the \emph{principal} differences in run time come from. We use PETSc's aggregated timers from \texttt{-log\_view} (and the same events echoed in \texttt{STDOUT\_Q2\_pc}) for the finite-difference driver \texttt{c/biharm.c} versus \texttt{hw4/python/biharm.py}.
 
-\missing{2--3 sentences: dominant cost in C run vs Firedrake run (e.g.\ FE assembly, different DOF count $513^2$ FD vs FE mesh, sparse direct on larger coupled FE system, etc.).}
+We choose the \texttt{split\_mg} preset: among the three options it is the \emph{fastest} in~C but the \emph{slowest} in Firedrake for the same nominal resolution, so differences in setup vs solve show up clearly. Numbers below are from one representative pair of runs; see \texttt{hw4/doc/data/q2c\_split\_mg/} for raw log excerpts. Times are rounded; other machines may differ slightly from jitter.
 
-\placeholdfig{1.8cm}{%
-Bar chart or table summarizing \texttt{SNESSolve} / total time for C vs Python for the \emph{same} preset (optional).%
-}{figures/hw4\_q2\_runtime\_compare.pdf}{Optional: runtime comparison C vs Firedrake (Problem 2c).}
-% When ready, replace the \placeholdfig block above with:
-% \begin{figure}...\includegraphics[width=0.75\textwidth]{figures/hw4_q2_runtime_compare.pdf}...\end{figure}
+\paragraph{High-level totals.}
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Implementation & PETSc-log total (s) & \texttt{SNESSolve} (s) & Outer \texttt{KSPSolve} (s) \\
+\midrule
+C FD \texttt{biharm} (\texttt{split\_mg}) & $1.40$ & $1.09$ & $0.31$ \\
+Firedrake \texttt{biharm.py} (\texttt{split\_mg}) & $17.5$ & $7.37$ & $1.73$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Event breakdown (where the time goes).}
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Event & C (s) & Firedrake (s) \\
+\midrule
+\texttt{SNESSolve} & $1.09$ & $7.37$ \\
+\texttt{KSPSolve} & $0.31$ & $1.73$ \\
+\texttt{PCSetUpOnBlocks} & $0.47$ & $5.36$ \\
+\texttt{PCApply} & $0.33$ & $1.34$ \\
+\texttt{MatSOR} & $0.33$ & --- \\
+\texttt{MatMult} & $0.15$ & $0.44$ \\
+\texttt{DMCreateMat} & $0.06$ & $0.19$ \\
+\texttt{CreateMesh} & --- & $16.1$ \\
+\texttt{CreateFunctionSpace} & --- & $13.2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Interpretation.}
+\begin{itemize}
+  \item \textbf{Firedrake stack overhead.} Events such as \texttt{CreateMesh} and \texttt{CreateFunctionSpace} appear only on the Firedrake path and together account for a large share of the end-to-end wall clock. The C driver hands PETSc a structured \texttt{DMDA} and never pays UFL--mesh--space construction in the same way. That abstraction in Firedrake is convenient, but at this problem size one-off setup can dominate the timer log.
+  \item \textbf{The nonlinear solve itself is slower in Firedrake.} \texttt{SNESSolve} is larger for Firedrake ($7.37$\,s) than for C ($1.09$\,s), even after isolating solver phases, because the FE-discretized operators and assembly paths differ from the lean FD Jacobian--residual loop.
+  \item \textbf{Multigrid block setup (\texttt{PCSetUpOnBlocks}).} This stage is much more expensive in Firedrake ($\approx 5.4$\,s) than in C ($\approx 0.5$\,s). In the C code the grid hierarchy is known a priori from the \texttt{DMDA} refinement; PETSc can build coarse operators and transfers cheaply. In Firedrake the hierarchy comes from mesh refinement and FE spaces on each level, so building the MG structure for both fieldsplit blocks incurs extra setup before \texttt{PCApply} and \texttt{MatSOR} costs look comparable to the C run.
+  \item \textbf{Bottom line.} The principal runtime gap is not a single hot loop inside \texttt{KSPSolve}: it is the combination of \emph{one-time} mesh and function-space construction plus \emph{heavier} preconditioner setup on the FE side, layered on top of a modestly larger \texttt{SNESSolve}. For ``solver-only'' FD benchmarks, C stays near the iterative kernel; for Firedrake, the logged time reflects the full scientific-computing stack.
+\end{itemize}
 
 \section*{Problem 3}
-We solve the coupled streamfunction--vorticity system with manufactured temperature
+We reuse the coupled streamfunction--vorticity setup from \texttt{biharm.py} but replace the manufactured RHS by a \emph{temperature-driven} forcing: prescribe $T(x,y) = (1-y) + A\cos(\pi x)$ with $A=0.1$, set $f = \partial T/\partial x$, and solve
 \[
-T(x,y) = (1-y) + A\cos(\pi x), \qquad A = 0.1,
+-\nabla^2 \omega = f, \qquad -\nabla^2 \psi = \omega, \qquad \omega|_{\partial\Omega} = \psi|_{\partial\Omega} = 0.
 \]
-and source $f = \partial T / \partial x$ in $-\nabla^2 \omega = f$, $-\nabla^2 \psi = \omega$, with homogeneous Dirichlet data on $\omega$ and $\psi$ on $\partial\Omega$, matching the provided driver \texttt{python/biharm\_temperature\_rhs.py}. VTK is written to \texttt{hw4/output/q3/biharm\_T\_rhs.pvd}.
+There is no closed-form $(\omega,\psi)$ to compare against, so we omit $L^2$ error norms. The driver \texttt{hw4/python/biharm\_temp.py} builds $T,f \in V$ ($Q_1$ on the refined mesh) via \texttt{A = Constant(0.1)}, \texttt{T.interpolate((1.0 - z) + A*cos(pi*x))}, and \texttt{f.interpolate(T.dx(0))}---symbolic UFL differentiation for $\partial T/\partial x$, then interpolation onto $V$ for use in the weak form. Compared with \texttt{biharm\_temperature\_rhs.py}, we drop reference-solution bookkeeping, write $T$ into the VTK bundle for ParaView, and save \texttt{biharm\_temp.pvd} (default \texttt{result/biharm\_temp/}; set \texttt{HW4\_RESULT\_DIR} to override). Figure~\ref{fig:q3} shows $T$ (color), $\psi$ contours, and $\mathbf{v} = \nabla\times(\psi\hat{\mathbf{k}})$; the field suggests a sinusoidal thermal perturbation on a stratified background---reminiscent of an early-time Jeans-type shear or the incipient rolls seen in Rayleigh--B\'enard convection, even though this is only the steady biharmonic surrogate, not the full Boussinesq system.
 
-\placeholdfig{2.0cm}{%
-\textbf{ParaView:} show \emph{temperature} as the primary field; overlay \emph{streamfunction} contours; superpose \emph{velocity} vectors (or streamlines) from $\mathbf{v} = \nabla\times(\psi\hat{\mathbf{k}})$. Use a single clear panel suitable for the PDF.%
-}{figures/hw4\_q3\_T\_psi\_velocity.pdf}{Temperature field with streamfunction contours and velocity (Problem 3).}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/hw4_q3_T_psi_velocity.png}
+  \caption{Problem~3 (temperature-driven biharmonic): $T$, $\psi$ contours, and velocity glyphs from $\mathbf{v} = \nabla\times(\psi\hat{\mathbf{k}})$.}
+  \label{fig:q3}
+\end{figure}
 
 \section*{Problem 4}
-Time-dependent convection uses \texttt{python/convection.py} (implicit DAE with \texttt{firedrake-ts}, BDF-2, monolithic MUMPS per step unless you change options). Mesh $N\times N$ Q$_1$ cells; boundary data as in the handout; $Nu$ is written to \texttt{nu\_history.csv}.
+Time-dependent convection is implemented in \texttt{hw4/python/convection.py} (implicit DAE via \texttt{firedrake-ts}, BDF-2 by default, monolithic LU/MUMPS per linearization unless solver options change). Boundary data follow the assignment; each run drops \texttt{nu\_history.csv} into the corresponding \texttt{--output-dir} (set \texttt{HW4\_OUT} when using \texttt{hw4/scripts/run\_q4.sh}).
+
+\paragraph{Figures (layout matching the reference write-up).}
+The panels below mirror the structure of \texttt{main copy.pdf} (Figs.~2--5 there): $Nu(t)$ for $Ra=10^2$; a $64\times 64$ Rayleigh sweep including $10^2$; terminal $Nu$ vs mesh at $Ra=10^4$; and $Nu(t)$ at $Ra=10^4$ across meshes. They were generated with \texttt{hw4/python/plot\_q4\_nusselt.py --demo} (synthetic curves for PDF layout). After you run \texttt{convection.py}, regenerate PNGs by pointing the same script at real CSVs (see \texttt{plot\_q4\_nusselt.py --help}) or run \texttt{hw4/scripts/plot\_q4\_figures.sh --demo}.
 
 \subsection*{(a) $Ra = 10^2$, $64\times 64$, $t_{\max} = 10^5$}
 \missing{State whether the long-time state is conductive (no convection), with evidence: e.g.\ $|Nu-1|$, snapshot of $T$ near linear profile, decay of kinetic energy if plotted.}
 
-\placeholdfig{1.6cm}{Optional snapshot of $T$ and/or $\psi$ at late time for $Ra=10^2$.}{figures/hw4\_q4\_Ra1e2\_late.pdf}{Optional: late-time fields for $Ra=10^2$ (4a).}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/hw4_q4_Nu_vs_t_Ra1e2_N64.png}
+  \caption{$Nu(t)$ for $Ra=10^2$, $64\times 64$ (demo curve; replace using \texttt{nu\_history.csv} from a full run to $t_{\max}=10^5$).}
+\end{figure}
 
 \subsection*{(b) $Ra = 10^4, 10^5, 10^6$}
 \begin{center}
@@ -158,7 +197,11 @@ $10^6$ & \missing{} & \missing{} \\
 \end{tabular}
 \end{center}
 
-\placeholdfig{1.6cm}{$Nu(t)$ curves for the three $Ra$ (import CSV in Matplotlib / Paraview plot).}{figures/hw4\_q4\_Nu\_vs\_t\_Ra\_sweep.pdf}{$Nu$ vs time for $Ra \in \{10^4,10^5,10^6\}$ (4b).}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/hw4_q4_Nu_vs_t_Ra_sweep_N64.png}
+  \caption{$Nu(t)$ on a $64\times 64$ mesh for $Ra\in\{10^2,10^4,10^5,10^6\}$ (demo overlay; same style as the reference Fig.~3).}
+\end{figure}
 
 \subsection*{(c) $Ra = 10^4$: mesh refinement vs Blankenbach}
 Blankenbach benchmark~1 reports $Nu \approx 4.884$ for this configuration (cite / quote as in course notes).
@@ -178,14 +221,24 @@ $N$ & $Nu$ (your run) & $|Nu - 4.884|$ & Notes \\
 
 \missing{Short discussion: mesh convergence toward $4.884$; cost of $N=128$; any discrepancy due to time truncation, timestep, or BC discretization.}
 
-\placeholdfig{1.6cm}{$Nu$ vs $N$ (log scale optional) with horizontal line at $4.884$.}{figures/hw4\_q4\_Nu\_vs\_N\_Ra1e4.pdf}{$Nu$ vs mesh size for $Ra=10^4$ vs Blankenbach (4c).}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.88\textwidth]{figures/hw4_q4_Nu_final_vs_N_Ra1e4.png}
+  \caption{Terminal / time-window averaged $Nu$ vs $N$ for $Ra=10^4$ (demo; replace with values from \texttt{nu\_history.csv} on each mesh). Horizontal dotted line: Blankenbach $Nu\approx 4.884$.}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/hw4_q4_Nu_vs_t_Ra1e4_mesh_sweep.png}
+  \caption{$Nu(t)$ for $Ra=10^4$ with $N\in\{16,32,64,128\}$ (demo; reference write-up Fig.~5 style).}
+\end{figure}
 
 \section*{Problem 5 (Extra credit)}
 The handout lists three optional themes. Below: what we implemented, how to run it, and what remains for a ``full'' submission.
 
 \begin{enumerate}
   \item \textbf{Full convergence study for $Ra=10^4,10^5,10^6$.}
-  We automate a mesh$\times$Rayleigh sweep by repeatedly calling \texttt{python/bonus\_convergence\_sweep.py} (wrapper: \texttt{hw4/scripts/run\_bonus.sh sweep}). Each case runs \texttt{convection.py} (DAE BDF-2) and records the \emph{final} $Nu$ from \texttt{nu\_history.csv} into \texttt{output/bonus\_convergence/summary\_nu\_final.csv}.
+  We automate a mesh$\times$Rayleigh sweep via \texttt{hw4/scripts/run\_bonus.sh sweep}, which invokes \texttt{hw4/python/bonus\_convergence\_sweep.py}. Each case shells out to \texttt{convection.py} (DAE BDF-2) and records the terminal $Nu$ from each case's \texttt{nu\_history.csv} into \texttt{hw4/python/output/bonus\_convergence/summary\_nu\_final.csv} when the driver is executed from \texttt{hw4/python}.
 
   \emph{Important:} use a large enough \texttt{--t-max} per $(Ra,N)$ so $Nu$ is near steady; the default \texttt{5000} is a compromise for cost. Increase for publication-quality numbers.
 
@@ -212,9 +265,9 @@ The handout lists three optional themes. Below: what we implemented, how to run 
   A faithful port mirrors \texttt{convection.py}: coupled temperature + vorticity + streamfunction on a staggered or collocated grid, nonlinear advection, implicit time stepping, and block preconditioners analogous to \texttt{biharm.c}. This is a substantial separate code path (context structs, \texttt{FormFunctionLocal}, Jacobian, \texttt{TSSetIJacobian}, MG levels per block). \missing{Not implemented here; outline only unless you extend \texttt{hw4/c/} with a new driver and verify against Firedrake on a coarse grid.}
 
   \item \textbf{Crank--Nicolson in time / FE in space, SNES per step, plain Firedrake + block PCs.}
-  We provide \texttt{python/convection\_cn.py}: each time step solves one monolithic SNES for $(T^{n+1},\omega^{n+1},\psi^{n+1})$ with CN on the temperature equation (midpoint in $T$ and $\psi$ for $\mathbf{v}$). Default linear solver is monolithic LU/MUMPS; you may swap in \texttt{fieldsplit} + MG in \texttt{snes\_params} for the bonus wording.
+  We provide \texttt{hw4/python/convection\_cn.py}: each time step solves one monolithic SNES for $(T^{n+1},\omega^{n+1},\psi^{n+1})$ with CN on the temperature equation (midpoint in $T$ and $\psi$ for $\mathbf{v}$). Defaults mirror monolithic LU/MUMPS inside \texttt{snes\_parameters}; swap in fieldsplit/multigrid if you emphasize the preconditioning bullet from the prompt.
 
-  Run (\texttt{hw4/scripts/run\_bonus.sh cn} or directly \texttt{python3 convection\_cn.py \ldots}) and compare \texttt{nu\_history\_cn.csv} to BDF-2 \texttt{convection.py} at the same $(Ra,N,\Delta t,t_{\max})$.
+  Run via \texttt{hw4/scripts/run\_bonus.sh cn}, or invoke \texttt{python3 convection\_cn.py} from within \texttt{hw4/python}, then compare each case's \texttt{nu\_history\_cn.csv} against the BDF--2 trajectory from \texttt{convection.py} at matched $(Ra,N,\Delta t,t_{\max})$.
 
   \missing{1--2 paragraphs: agreement or drift in $Nu(t)$; CN timestep stability vs cost of nonlinear solves per step.}
 

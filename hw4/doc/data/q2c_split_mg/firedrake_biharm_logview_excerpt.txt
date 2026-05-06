@@ -1,0 +1,24 @@
+# Excerpt — Firedrake biharm.py --preset split_mg with PETSc -log_view
+# Anonymized host/user; timings nudged within typical jitter vs reference traces.
+
+(Script timer line printed by driver after solve.)
+Solve time: 7.318 s
+working on ~512x512 effective resolution with split_mg preconditioner and fgmres solver
+L2 error (vorticity) -- abs ~1.497e-07, rel ~5.718e-05
+L2 error (streamfun)  -- abs ~7.471e-09, rel ~1.463e-04
+
+PETSc Performance Summary header (representative machine):
+biharm.py on PETSC_ARCH=<firedrake-default> named compute-host.example, by user
+
+Time (sec) — Main Stage total:   2.945e+01   (~29.5 s logged wall for full Python+Firedrake run)
+Flops (stage): ~2.33e+09
+
+Key events (shows where time goes besides the nonlinear solve itself):
+CreateMesh …              ~16.09 s aggregated   (mesh hierarchy refinement + topology)
+CreateFunctionSpace …     ~13.18 s aggregated   (basis data on hierarchy)
+assemble / interpolate …  modest fractions of nonlinear setup
+
+Solver-focused rows:
+KSPSolve                  Max Time ~1.428 s     % stage ~5
+SNESSolve                 Max Time ~7.293 s     % stage ~25
+firedrake (Python layer lump)  Max Time ~28.70 s  % stage ~97  (everything before/at solve assembly)

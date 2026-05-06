@@ -1,6 +1,6 @@
-[Daniels-MacBook-Pro-864.local:27795] opal_ifinit: getifaddrs() failed with error=1
-[Daniels-MacBook-Pro-864.local:27795] pmix_ifinit: getifaddrs() failed with error=1
-[Daniels-MacBook-Pro-864.local:27795] pmix_ifinit: getifaddrs() failed with error=1
+[compute-host.example:27795] opal_ifinit: getifaddrs() failed with error=1
+[compute-host.example:27795] pmix_ifinit: getifaddrs() failed with error=1
+[compute-host.example:27795] pmix_ifinit: getifaddrs() failed with error=1
     0 KSP Residual norm 9.060417882786e-04
     1 KSP Residual norm 1.280212729965e-15
 done on 513 x 513 grid ...
@@ -11,7 +11,7 @@ done on 513 x 513 grid ...
 
 ------------------------------------------------------------------ PETSc Performance Summary: ------------------------------------------------------------------
 
-./biharm on a apma4302-pkgs-opt named Daniels-MacBook-Pro-864.local with 1 process, by dan on Sat Apr 25 15:12:38 2026
+./biharm on a apma4302-pkgs-opt named compute-host.example with 1 process, by user on Sat Apr 25 15:12:38 2026
 Using PETSc Development Git Revision: v3.24.4-530-g65c6dbde5b7 Git Date: 2026-02-24 17:10:46 +0000
 
                          Max       Max/Min     Avg       Total
@@ -116,9 +116,9 @@ Compiled with full precision matrices (default)
 sizeof(short) 2 sizeof(int) 4 sizeof(long) 8 sizeof(void*) 8 sizeof(PetscScalar) 8 sizeof(PetscInt) 4
 Configure options: --with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90 --with-debugging=0 --with-shared-libraries=1 --COPTFLAGS="-O3 -march=native" --CXXOPTFLAGS="-O3 -march=native" --FOPTFLAGS="-O3 -march=native" --download-hdf5 --download-metis --download-parmetis --download-hypre --download-scalapack --download-mumps --with-petsc4py
 -----------------------------------------
-Libraries compiled on 2026-02-24 20:25:35 on Daniels-MacBook-Pro-732.local
+Libraries compiled on 2026-02-24 20:25:35 on build-host.example
 Machine characteristics: macOS-15.6.1-arm64-arm-64bit
-Using PETSc directory: /Users/dan/Desktop/Columbia/HPC_4302/petsc
+Using PETSc directory: /path/to/petsc
 Using PETSc arch: apma4302-pkgs-opt
 -----------------------------------------
 
@@ -126,11 +126,11 @@ Using C compiler: mpicc  -fPIC -Wall -Wwrite-strings -Wno-unknown-pragmas -Wconv
 Using Fortran compiler: mpif90  -fPIC -Wall -ffree-line-length-none -ffree-line-length-0 -Wno-lto-type-mismatch -Wno-unused-dummy-argument -O3 -march=native   
 -----------------------------------------
 
-Using include paths: -I/Users/dan/Desktop/Columbia/HPC_4302/petsc/include -I/Users/dan/Desktop/Columbia/HPC_4302/petsc/apma4302-pkgs-opt/include
+Using include paths: -I/path/to/petsc/include -I/path/to/petsc/apma4302-pkgs-opt/include
 -----------------------------------------
 
 Using C linker: mpicc
 Using Fortran linker: mpif90
-Using libraries: -Wl,-rpath,/Users/dan/Desktop/Columbia/HPC_4302/petsc/apma4302-pkgs-opt/lib -L/Users/dan/Desktop/Columbia/HPC_4302/petsc/apma4302-pkgs-opt/lib -lpetsc -Wl,-rpath,/Users/dan/Desktop/Columbia/HPC_4302/petsc/apma4302-pkgs-opt/lib -L/Users/dan/Desktop/Columbia/HPC_4302/petsc/apma4302-pkgs-opt/lib -Wl,-rpath,/opt/homebrew/Cellar/open-mpi/5.0.9/lib -L/opt/homebrew/Cellar/open-mpi/5.0.9/lib -Wl,-rpath,/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15 -L/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15 -Wl,-rpath,/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc -L/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc -Wl,-rpath,/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current -L/opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current -lHYPRE -lsmumps -ldmumps -lcmumps -lzmumps -lmumps_common -lpord -lpthread -lscalapack -llapack -lblas -lhdf5_hl -lhdf5 -lparmetis -lmetis -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lgfortran -lemutls_w -lheapt_w -lgfortran -lquadmath -lc++
+Using libraries: -Wl,-rpath,/path/to/petsc/apma4302-pkgs-opt/lib -L/path/to/petsc/apma4302-pkgs-opt/lib -lpetsc -Wl,-rpath,/path/to/petsc/apma4302-pkgs-opt/lib -L/path/to/petsc/apma4302-pkgs-opt/lib -Wl,-rpath,/path/to/homebrew/Cellar/open-mpi/5.0.9/lib -L/path/to/homebrew/Cellar/open-mpi/5.0.9/lib -Wl,-rpath,/path/to/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15 -L/path/to/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc/aarch64-apple-darwin24/15 -Wl,-rpath,/path/to/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc -L/path/to/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/gcc -Wl,-rpath,/path/to/homebrew/Cellar/gcc/15.2.0/lib/gcc/current -L/path/to/homebrew/Cellar/gcc/15.2.0/lib/gcc/current -lHYPRE -lsmumps -ldmumps -lcmumps -lzmumps -lmumps_common -lpord -lpthread -lscalapack -llapack -lblas -lhdf5_hl -lhdf5 -lparmetis -lmetis -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -lgfortran -lemutls_w -lheapt_w -lgfortran -lquadmath -lc++
 -----------------------------------------
 

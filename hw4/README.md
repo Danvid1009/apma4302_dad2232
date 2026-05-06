@@ -40,6 +40,8 @@ Outline of where everything lives and how the pieces connect to the assignment.
 |------|---------|
 | **`biharm.py`** | FE biharmonic; same three solver presets as Q2a. |
 | **`biharm_temperature_rhs.py`** | Q3: temperature-driven RHS; VTK for ParaView. |
+| **`biharm_temp.py`** | Q3 (write-up variant): same physics as above, `T`/`f` via `interpolate` + `biharm_temp.pvd`. |
+| **`plot_q4_nusselt.py`** | Q4: build Nu vs time / Nu vs mesh PNGs from `nu_history.csv` (or `--demo` for layout drafts). |
 | **`convection.py`** | Q4: full coupled convection DAE (`firedrake-ts`), Nusselt CSV. |
 | **`heat.py`** | Reference heat / TS example used to build `convection.py`. |
 | **`convection_cn.py`** | Extra (3): Crank–Nicolson + SNES per step. |
@@ -53,6 +55,7 @@ Outline of where everything lives and how the pieces connect to the assignment.
 | **`run_q2.sh`** | C `biharm` (three options) + Firedrake `biharm.py` (three presets); logs under `output/logs/`. |
 | **`run_q3.sh`** | `biharm_temperature_rhs.py` → VTK under `output/q3/`. |
 | **`run_q4.sh`** | `convection.py` with env vars `RA`, `N`, `TMAX`, `DT`, `HW4_OUT`, etc. |
+| **`plot_q4_figures.sh`** | `plot_q4_nusselt.py` → `doc/figures/hw4_q4_*.png` (default `--demo`; pass script args for real CSVs). |
 | **`run_bonus.sh`** | `sweep` → `bonus_convergence_sweep.py`; `cn` → `convection_cn.py`. |
 | **`inc_firedrake_apptainer.sh`** | Shared helper for running `python3` inside a Firedrake Apptainer image on clusters. |
 
@@ -66,7 +69,7 @@ Created by the scripts: logs, VTK/PVD, `nu_history.csv`, bonus CSVs, etc. Regene
 
 - **Build PDF:** [`doc/README.md`](doc/README.md)  
 - **Run all numerics:** [`RUN.md`](RUN.md)  
-- **PDF ↔ code map:** [`doc/SCRIPTS.md`](doc/SCRIPTS.md)
+- **PDF ↔ code map + gap-fill checklist:** [`doc/SCRIPTS.md`](doc/SCRIPTS.md) (**“Checklist — fill gaps”** at bottom)
 
 ---
 
@@ -74,7 +77,7 @@ Created by the scripts: logs, VTK/PVD, `nu_history.csv`, bonus CSVs, etc. Regene
 
 The following are still open relative to a “finished” homework submission (see `doc/solutions.tex` for `\missing{...}` and `\placeholdfig` blocks):
 
-- **Problem 2 (Firedrake):** Fill tables from cluster/Python logs (`q2_py_*.log` or equivalent); optional runtime comparison figure for 2(c).  
+- **Problem 2 (Firedrake):** §2(b) filled from `doc/data/fe_biharm/`; §2(c) from `doc/data/q2c_split_mg/` (optional bar chart remains). Refresh from cluster logs if you prefer your own numbers.  
 - **Problem 3:** Export ParaView figure to PDF and replace the placeholder (`figures/hw4_q3_T_psi_velocity.pdf` or edit `solutions.tex`).  
 - **Problem 4:** Steady-state / Nusselt discussion for (a)–(c); plots for `Nu(t)`, `Nu` vs mesh vs Blankenbach; mesh sweep numbers.  
 - **Extra credit:** Populate bonus sweep table; optional heatmaps / BDF vs CN overlay figures; PETSc C+TS port (2) remains unimplemented unless you add it.  

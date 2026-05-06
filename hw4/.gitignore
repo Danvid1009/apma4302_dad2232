@@ -11,6 +11,7 @@ __pycache__/
 
 # Local venvs
 .venv/
+.venv-plot/
 
 # LaTeX build noise (sources stay tracked)
 doc/*.aux

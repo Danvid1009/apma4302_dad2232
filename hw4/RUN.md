@@ -23,10 +23,10 @@ Replace URL and path with yours.
 ```bash
 # first time
 git clone <YOUR_GIT_REMOTE_URL>
-cd apma4302_dad2232   # or your repo directory name
+cd <your-repo-directory>
 
 # later updates
-cd apma4302_dad2232
+cd <your-repo-directory>
 git pull
 ```
 
@@ -50,8 +50,8 @@ Activate your course / lab Firedrake environment the same way you do for other h
 Host `python3` usually has **no** `petsc4py` / Firedrake. The `run_q2.sh` / `run_q3.sh` / `run_q4.sh` scripts can run **`python3` inside the image** when you set:
 
 ```bash
-export HW4_APPTAINER_SIF=/insomnia001/home/dad2232/firedrake-ts.sif
-export HW4_APPTAINER_BIND=/insomnia001/home/dad2232:/insomnia001/home/dad2232
+export HW4_APPTAINER_SIF=/path/to/firedrake-ts.sif
+export HW4_APPTAINER_BIND=/path/to/your/work:/path/to/your/work
 ```
 
 Optional:
