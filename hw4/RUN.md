@@ -59,7 +59,8 @@ Optional:
 - `FIREDRAKE_TS_SIF` — used if `HW4_APPTAINER_SIF` is empty (same path).
 - `HW4_APPTAINER_RUNNER` — default: `apptainer`, else `singularity` if only that exists.
 - `HW4_APPTAINER_EXTRA_ARGS` — e.g. `--nv` passed before `--bind`.
-- `HW4_APPTAINER_UNSET_SLURM=1` — unset all `SLURM_*` in the script before `apptainer exec` if Open MPI still tries Slurm PMI and crashes.
+- `HW4_APPTAINER_UNSET_SLURM=1` — unset all `SLURM_*` before `apptainer exec` if Open MPI still tries Slurm PMI and crashes.
+- **Default (since `inc_firedrake_apptainer.sh` update):** if `SLURM_JOB_ID` is set and you do **not** set `HW4_APPTAINER_UNSET_SLURM`, it now defaults to **unset Slurm vars** (fixes common `srun` + Apptainer + `MPI_Init` / PMI errors). Set `HW4_APPTAINER_UNSET_SLURM=0` only if your site requires PMI inside the container.
 
 The scripts set `OMPI_MCA_plm=isolated` by default when using the SIF (helps under interactive `srun`).
 

@@ -6,6 +6,9 @@
 #   export HW4_APPTAINER_BIND=/your/home:/your/home   # optional; default HOME:HOME
 #
 # Slurm + Open MPI in the image: isolated PLM is set unless already overridden.
+# If you launch from `srun`/`sbatch` and see PMI / OPAL errors from MPI_Init, the
+# container Open MPI is picking up SLURM_*; we default to unsetting those when
+# SLURM_JOB_ID is set (override with HW4_APPTAINER_UNSET_SLURM=0 if your site needs PMI).
 
 hw4_python3() {
   local sif="${HW4_APPTAINER_SIF:-}"
@@ -27,7 +30,16 @@ hw4_python3() {
       fi
     fi
     export OMPI_MCA_plm="${OMPI_MCA_plm:-isolated}"
-    if [[ "${HW4_APPTAINER_UNSET_SLURM:-0}" == "1" ]]; then
+    # Default: under Slurm, strip SLURM_* before `apptainer exec` so in-container
+    # mpiexec does not attempt Slurm PMI (often missing / mismatched → MPI_Init failure).
+    local unset_slurm="${HW4_APPTAINER_UNSET_SLURM:-}"
+    if [[ -z "${unset_slurm}" && -n "${SLURM_JOB_ID:-}" ]]; then
+      unset_slurm=1
+    fi
+    if [[ -z "${unset_slurm}" ]]; then
+      unset_slurm=0
+    fi
+    if [[ "${unset_slurm}" == "1" ]]; then
       # shellcheck disable=SC2046
       unset $(printenv | grep '^SLURM_' | cut -d= -f1) || true
     fi
