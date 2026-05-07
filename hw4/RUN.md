@@ -139,10 +139,14 @@ This writes `nu_history.csv` under:
 - **(b)** `hw4/output/q4_4b_Ra1e4_N64/` (and `1e5`, `1e6`) — same mesh and \(t_{\max}\) per case.
 - **(c)** `hw4/output/q4_4c_Ra1e4_N16/` … `N128` — \(Ra=10^4\), mesh sweep for Blankenbach comparison (\(Nu\approx 4.884\) at steady, fine mesh).
 
-Optional env overrides if \(Nu\) has not plateaued or the high-\(Ra\) run is stiff:
+**Wall time:** `firedrake-ts` uses PETSc’s **adaptive** time stepper. At **low** \(Ra\) the step often **grows** (few hundred steps to \(t_{\max}\)); at **high** \(Ra\) the DAE is **stiff**, the step **shrinks**, and part **(b)** can take **many more** TS iterations than **(a)** even for the same \(t_{\max}\).
+
+Optional env overrides if \(Nu\) has not plateaued, the high-\(Ra\) run is slow, or you want a draft:
 
 ```bash
 TMAX_4B=200000 TMAX_4C=200000 DT=0.05 hw4/scripts/run_q4_assignment.sh
+# Loosen TS tolerances (faster, slightly looser time integration); defaults 1e-6 / 1e-10:
+TS_RTOL=1e-4 TS_ATOL=1e-8 hw4/scripts/run_q4_assignment.sh
 ```
 
 Single manual leg (same as before; use **`sbatch`/`srun`** on clusters for long wall time):

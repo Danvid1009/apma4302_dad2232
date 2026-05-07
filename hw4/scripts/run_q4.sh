@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # HW4 Q4: convection DAE (firedrake-ts). Override RA, N, TMAX, DT via env vars.
+# Optional: TS_RTOL, TS_ATOL → --ts-rtol / --ts-atol (stiff high-Ra runs).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,10 +20,14 @@ echo "Running convection.py Ra=${RA} N=${N} t_max=${TMAX} dt=${DT} -> ${OUT}"
 if [[ -n "${HW4_APPTAINER_SIF:-}${FIREDRAKE_TS_SIF:-}" ]]; then
   echo "(using Apptainer/Singularity image for python3)"
 fi
+TS_EXTRA=()
+[[ -n "${TS_RTOL:-}" ]] && TS_EXTRA+=(--ts-rtol "${TS_RTOL}")
+[[ -n "${TS_ATOL:-}" ]] && TS_EXTRA+=(--ts-atol "${TS_ATOL}")
 hw4_python3 convection.py \
   --ra "${RA}" --n "${N}" --t-max "${TMAX}" --dt "${DT}" \
   --output-dir "${OUT}" \
   --vtk-every "${VTK_EVERY:-0}" \
+  "${TS_EXTRA[@]}" \
   "$@"
 
 echo "CSV: ${OUT}/nu_history.csv"

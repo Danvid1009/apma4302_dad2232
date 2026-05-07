@@ -10,11 +10,15 @@
 #     export HW4_APPTAINER_BIND="$HOME:$HOME"
 #
 # Optional overrides (all times are dimensionless t as in the prompt):
-#   DT=0.1                  fixed step for all legs (default 0.1)
+#   DT=0.1                  initial TS step / nominal step (PETSc may still adapt)
 #   TMAX_4A=100000          part (a) end time (default 100000 = 10^5)
 #   TMAX_4B=100000          part (b) end time per Ra (raise if Nu not steady)
 #   TMAX_4C=100000          part (c) end time per mesh (raise toward Blankenbach steady Nu)
 #   VTK_EVERY=0             set >0 for ParaView dumps (large output)
+#   TS_RTOL / TS_ATOL       forwarded to convection.py (--ts-rtol / --ts-atol). Part (b)
+#                           at high Ra is stiff: adaptive TS often uses tiny dt → many
+#                           iterations. Loosening (e.g. TS_RTOL=1e-4 TS_ATOL=1e-8) speeds
+#                           runs at some accuracy cost; lowering TMAX_4B shortens drafts.
 #
 set -euo pipefail
 

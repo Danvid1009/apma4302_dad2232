@@ -74,6 +74,18 @@ def main():
         default=1,
         help="Facet marker for y=0 (UnitSquareMesh default)",
     )
+    parser.add_argument(
+        "--ts-rtol",
+        type=float,
+        default=1e-6,
+        help="PETSc TS relative tolerance (larger → fewer adaptive substeps / faster, looser)",
+    )
+    parser.add_argument(
+        "--ts-atol",
+        type=float,
+        default=1e-10,
+        help="PETSc TS absolute tolerance (larger → often faster for stiff Ra)",
+    )
     args = parser.parse_args()
 
     mesh = UnitSquareMesh(args.n, args.n, quadrilateral=True)
@@ -122,8 +134,8 @@ def main():
         "ts_bdf_order": 2,
         "ts_dt": args.dt,
         "ts_monitor": None,
-        "ts_rtol": 1e-6,
-        "ts_atol": 1e-10,
+        "ts_rtol": args.ts_rtol,
+        "ts_atol": args.ts_atol,
         "ksp_type": "preonly",
         "pc_type": "lu",
         "pc_factor_mat_solver_type": "mumps",
