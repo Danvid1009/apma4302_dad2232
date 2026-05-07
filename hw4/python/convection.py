@@ -1,7 +1,10 @@
 # HW4 Q4: streamfunction–vorticity thermal convection as a DAE with firedrake-ts.
-# PDEs (non-dimensional): T_t + v·∇T = (1/Ra)∇²T,  -∇²ω = ∂T/∂x,  -∇²ψ = ω,
-# v = (∂ψ/∂y, -∂ψ/∂x). BCs: T=1 bottom, T=0 top, ∂T/∂x=0 on sides (natural);
-# ω=0, ψ=0 on ∂Ω. Initial T = (1-y) + A*cos(pi*x); ω,ψ from elliptic solve at t=0.
+# Matches handout Eqs. (4)–(6): T_t + v·∇T = (1/Ra)∇²T,  -∇²ω = ∂T/∂x,  -∇²ψ = ω,
+# v = (∂ψ/∂y, -∂ψ/∂x). BCs: T=1 on y=0, T=0 on y=1, natural (no-flux) sides ⇒ ∂T/∂x=0;
+# ω=0, ψ=0 on ∂Ω. IC: T = (1-y) + A cos(πx); ω,ψ from coupled elliptic solve at t=0.
+# Time: BDF-2 (PETSc TS); each step: monolithic LU with MUMPS (ksp preonly / pc lu).
+# Nu = -(∫ ∂T/∂n on top)/(∫ ∂T/∂n on bottom) via FacetNormal + ds markers (--ds-top/--ds-bot).
+# Assignment batching: hw4/scripts/run_q4_assignment.sh (parts a–c) or run_q4.sh for one-off runs.
 import argparse
 import csv
 import os

@@ -55,6 +55,7 @@ Outline of where everything lives and how the pieces connect to the assignment.
 | **`run_q2.sh`** | C `biharm` (three options) + Firedrake `biharm.py` (three presets); logs under `output/logs/`. |
 | **`run_q3.sh`** | `biharm_temperature_rhs.py` → VTK under `output/q3/`. |
 | **`run_q4.sh`** | `convection.py` with env vars `RA`, `N`, `TMAX`, `DT`, `HW4_OUT`, etc. |
+| **`run_q4_assignment.sh`** | Q4 (a)(b)(c) in sequence: `Ra=10^2,N=64`; then `Ra=10^4,10^5,10^6,N=64`; then `Ra=10^4,N=16..128` → separate `nu_history.csv` dirs. |
 | **`plot_q4_figures.sh`** | `plot_q4_nusselt.py` → `doc/figures/hw4_q4_*.png` (default `--demo`; pass script args for real CSVs). |
 | **`run_bonus.sh`** | `sweep` → `bonus_convergence_sweep.py`; `cn` → `convection_cn.py`. |
 | **`inc_firedrake_apptainer.sh`** | Shared helper for running `python3` inside a Firedrake Apptainer image on clusters. |

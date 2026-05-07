@@ -124,7 +124,26 @@ Quick sanity (short time, no VTK):
 RA=1e2 N=32 TMAX=50 DT=0.1 VTK_EVERY=0 hw4/scripts/run_q4.sh
 ```
 
-Assignment-style long run (example; may need **batch** job and hours of wall time):
+**Assignment (a)(b)(c) in one driver** — uses the handout defaults: **BDF-2**, **64×64** for (a)(b), **\(t_{\max}=10^5\)** unless you override, **MUMPS** monolithic direct inside `convection.py`. On clusters set **`HW4_APPTAINER_SIF`** / **`HW4_APPTAINER_BIND`** first (see §3).
+
+```bash
+chmod +x hw4/scripts/run_q4_assignment.sh
+hw4/scripts/run_q4_assignment.sh
+```
+
+This writes `nu_history.csv` under:
+
+- **(a)** `hw4/output/q4_4a_Ra1e2_N64/` — \(Ra=10^2\), \(N=64\), \(t_{\max}=10^5\) (non-convective steady ⇒ \(Nu\to 1\)).
+- **(b)** `hw4/output/q4_4b_Ra1e4_N64/` (and `1e5`, `1e6`) — same mesh and \(t_{\max}\) per case.
+- **(c)** `hw4/output/q4_4c_Ra1e4_N16/` … `N128` — \(Ra=10^4\), mesh sweep for Blankenbach comparison (\(Nu\approx 4.884\) at steady, fine mesh).
+
+Optional env overrides if \(Nu\) has not plateaued or the high-\(Ra\) run is stiff:
+
+```bash
+TMAX_4B=200000 TMAX_4C=200000 DT=0.05 hw4/scripts/run_q4_assignment.sh
+```
+
+Single manual leg (same as before; use **`sbatch`/`srun`** on clusters for long wall time):
 
 ```bash
 RA=1e2 N=64 TMAX=100000 DT=0.1 VTK_EVERY=0 hw4/scripts/run_q4.sh
