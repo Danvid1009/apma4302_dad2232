@@ -62,8 +62,18 @@ def main():
     parser.add_argument("--vtk-every", type=float, default=0.0, help="Write VTK every this many time units (0=off)")
     parser.add_argument("--nu-every", type=int, default=10, help="Print / log Nu every this many TS steps")
     parser.add_argument("--output-dir", type=str, default="result/q4")
-    parser.add_argument("--ds-top", type=int, default=3, help="Facet marker for y=1 (Firedrake UnitSquareMesh default)")
-    parser.add_argument("--ds-bot", type=int, default=1, help="Facet marker for y=0")
+    parser.add_argument(
+        "--ds-top",
+        type=int,
+        default=3,
+        help="Facet marker for y=1 (UnitSquareMesh default; use with Dirichlet BCs and Nu)",
+    )
+    parser.add_argument(
+        "--ds-bot",
+        type=int,
+        default=1,
+        help="Facet marker for y=0 (UnitSquareMesh default)",
+    )
     args = parser.parse_args()
 
     mesh = UnitSquareMesh(args.n, args.n, quadrilateral=True)
@@ -96,9 +106,11 @@ def main():
     F_p = inner(grad(p), grad(phi)) * dx - inner(o, phi) * dx
     F = F_T + F_o + F_p
 
+    # Use facet IDs, not "bottom"/"top" strings — those are invalid on non-extruded
+    # UnitSquareMesh in current Firedrake (raises ValueError in boundary_nodes).
     bcs = [
-        DirichletBC(ME.sub(0), Constant(1.0), "bottom"),
-        DirichletBC(ME.sub(0), Constant(0.0), "top"),
+        DirichletBC(ME.sub(0), Constant(1.0), args.ds_bot),
+        DirichletBC(ME.sub(0), Constant(0.0), args.ds_top),
         DirichletBC(ME.sub(1), Constant(0.0), "on_boundary"),
         DirichletBC(ME.sub(2), Constant(0.0), "on_boundary"),
     ]

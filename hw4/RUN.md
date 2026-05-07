@@ -195,7 +195,7 @@ Item **(2)** (PETSc C + `DMDA` + `TS` + fieldsplit) is not scripted here; it wou
 - **C build:** `PETSC_DIR` not set or wrong; missing MUMPS.
 - **`import firedrake` fails:** Firedrake environment not activated in that shell/container.
 - **`import firedrake_ts` fails (Q4 only):** install/activate the **firedrake-ts** add-on for that Firedrake build.
-- **Nu looks wrong / NaN:** facet IDs for top/bottom may differ by mesh generator; try `python3 convection.py --ds-top 4 --ds-bot 2` (or swap) after checking your Firedrake `UnitSquareMesh` boundary marker convention.
+- **Nu looks wrong / NaN:** facet IDs for top/bottom may differ by mesh generator; try `python3 convection.py --ds-top 4 --ds-bot 2` (or swap) after checking your Firedrake `UnitSquareMesh` boundary marker convention. The same flags set **temperature Dirichlet facets** (must match top/bottom physically).
 
 ---
 
