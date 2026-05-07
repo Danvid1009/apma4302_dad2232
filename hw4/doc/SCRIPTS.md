@@ -11,7 +11,7 @@ Paths are relative to the **repository root** (the course homework checkout), un
 | Q2c — C vs FE timing excerpt | §2(c) narrative + table | `hw4/doc/data/q2c_split_mg/{petsc_fd_biharm_logview_excerpt.txt,firedrake_biharm_logview_excerpt.txt}` | Perturbed summaries for \texttt{split\_mg}; refresh from raw \texttt{-log\_view} if needed |
 | Q3 — temperature RHS | `\texttt{python/biharm\_temperature\_rhs.py}` | `hw4/python/biharm_temperature_rhs.py` | `hw4/scripts/run_q3.sh` |
 | Q3 — VTK output | `\texttt{hw4/output/q3/biharm\_T\_rhs.pvd}` | created under `hw4/output/q3/` | After `run_q3.sh` |
-| Q4 — full convection DAE | `\texttt{python/convection.py}` | `hw4/python/convection.py` | `hw4/scripts/run_q4.sh` (env `RA`, `N`, `TMAX`, …) or **`run_q4_assignment.sh`** for (a)(b)(c) batch |
+| Q4 — full convection DAE | `\texttt{python/convection.py}` | `hw4/python/convection.py` | `hw4/scripts/run_q4.sh`; **`run_q4_assignment.sh`** batch (a)(b)(c); **`run_q4_leg.sh`** single leg \(1\leftrightarrow8\) |
 | Q4 — Nusselt CSV | `\texttt{nu\_history.csv}` | under each run’s `--output-dir` / `HW4_OUT` | Written by `convection.py` |
 | Extra (1) — sweep | `\texttt{python/bonus\_convergence\_sweep.py}` | `hw4/python/bonus_convergence_sweep.py` | `hw4/scripts/run_bonus.sh sweep …` |
 | Extra (1) — wrapper | `\texttt{hw4/scripts/run\_bonus.sh}` | `hw4/scripts/run_bonus.sh` | `chmod +x hw4/scripts/run_bonus.sh` |
@@ -33,7 +33,7 @@ Set cluster env vars (`HW4_APPTAINER_SIF`, `HW4_APPTAINER_BIND`, `OMPI_MCA_plm=i
 | **§2(b)** | preset table (done in repo snapshot) | Committed logs: **`hw4/doc/data/fe_biharm/{direct,split_direct,split_mg}.txt`**; refresh via `SKIP_HW4_C=1 ./scripts/run_q2.sh` → **`hw4/output/logs/q2_py_*.log`** |
 | **§2(c)** | filled from `doc/data/q2c_split_mg/` | Replenish excerpts from raw logs if needed; optional PDF **`doc/figures/hw4_q2_runtime_compare.pdf`** |
 | **§3** | Single ParaView pane | `./scripts/run_q3.sh` → open `hw4/output/q3/biharm_T_rhs.pvd`; export/screenshot **`doc/figures/hw4_q3_T_psi_velocity.pdf`** (see `figures/README.md`); swap `\placeholdfig` for `\includegraphics` |
-| **§4(a–c)** | tables + `Nu(t)` / `Nu(N)` figures | **`./scripts/run_q4_assignment.sh`** (defaults \(t_{\max}=10^5\) per leg; override `TMAX_4A`, `TMAX_4B`, `TMAX_4C`, `DT`); or individual `./scripts/run_q4.sh` legs |
+| **§4(a–c)** | tables + `Nu(t)` / `Nu(N)` figures | **`./scripts/run_q4_assignment.sh`** or **`./scripts/run_q4_leg.sh`** (defaults \(t_{\max}=10^5\), \(DT\approx10^{-2}\) hint; overrides `TMAX_4A`…, `DT`); or `./scripts/run_q4.sh` per case |
 | **§4(a)** | Paragraph + $|Nu-1|$ | Output **`output/q4_4a_Ra1e2_N64/nu_history.csv`**; optional figure from VTK if `VTK_EVERY>0` |
 | **§4(b)** | Table 3 × `Nu`; `Nu(t)` figure | **`output/q4_4b_Ra1e{4,5,6}_N64/`**; plot → **`doc/figures/hw4_q4_Nu_vs_t_Ra_sweep.png`** (see `plot_q4_nusselt.py`) |
 | **§4(c)** | Table `N`=16–128; discussion; plot | **`output/q4_4c_Ra1e4_N{16,32,64,128}/`**; compare late `Nu` to **4.884**; **`doc/figures/hw4_q4_Nu_final_vs_N_Ra1e4.png`** |

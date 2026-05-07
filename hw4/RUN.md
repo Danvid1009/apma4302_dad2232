@@ -9,7 +9,7 @@ Use this on a **login node, compute node, SSH session, or in a Docker/app contai
 You (or whoever has write access) should **commit and push** after:
 
 - `hw4/python/biharm.py`, `biharm_temperature_rhs.py`, `convection.py` are present.
-- `hw4/scripts/run_q2.sh`, `run_q3.sh`, `run_q4.sh` are present and executable (`chmod +x hw4/scripts/*.sh`).
+- `hw4/scripts/run_q2.sh`, `run_q3.sh`, `run_q4.sh`, `run_q4_assignment.sh`, `run_q4_leg.sh` are present and executable (`chmod +x hw4/scripts/*.sh`).
 - This file `hw4/RUN.md` is present.
 
 Then anyone can `git pull` and follow the sections below.
@@ -72,7 +72,7 @@ The scripts set `OMPI_MCA_plm=isolated` by default when using the SIF (helps und
 From the repo root:
 
 ```bash
-chmod +x hw4/scripts/run_q2.sh hw4/scripts/run_q3.sh hw4/scripts/run_q4.sh
+chmod +x hw4/scripts/run_q2.sh hw4/scripts/run_q3.sh hw4/scripts/run_q4.sh hw4/scripts/run_q4_assignment.sh hw4/scripts/run_q4_leg.sh
 ```
 
 ### Q2 — C + Firedrake biharmonic drivers
@@ -123,14 +123,22 @@ Open `hw4/output/q3/biharm_T_rhs.pvd` in ParaView (copy to your laptop if the ru
 Quick sanity (short time, no VTK):
 
 ```bash
-RA=1e2 N=32 TMAX=50 DT=0.1 VTK_EVERY=0 hw4/scripts/run_q4.sh
+RA=1e2 N=32 TMAX=50 DT=0.01 VTK_EVERY=0 hw4/scripts/run_q4.sh
 ```
 
-**Assignment (a)(b)(c) in one driver** — uses the handout defaults: **BDF-2**, **64×64** for (a)(b), **\(t_{\max}=10^5\)** unless you override, **MUMPS** monolithic direct inside `convection.py`. On clusters set **`HW4_APPTAINER_SIF`** / **`HW4_APPTAINER_BIND`** first (see §3).
+**Assignment (a)(b)(c) in one driver** — uses the handout defaults: **BDF-2**, **`DT=0.01`** as PETSc `--ts-dt` hint (**adaptive** TS still adjusts \(\Delta t\)), **64×64** for (a)(b), **\(t_{\max}=10^5\)** unless you override, **MUMPS** monolithic direct inside `convection.py`. On clusters set **`HW4_APPTAINER_SIF`** / **`HW4_APPTAINER_BIND`** first (see §3).
 
 ```bash
-chmod +x hw4/scripts/run_q4_assignment.sh
+chmod +x hw4/scripts/run_q4_assignment.sh hw4/scripts/run_q4_leg.sh
 hw4/scripts/run_q4_assignment.sh
+```
+
+**One leg at a time (save `nu_history.csv` as you go):** identical outputs to the batch driver, numbered **1 … 8** in assignment order `(a)`, three `(b)` Rayleigh numbers, four `(c)` meshes. Rough **PETSc accepted-step counts** from a reference log (~\(t_{\max}=10^5\), adaptive TS) print with `list`:
+
+```bash
+hw4/scripts/run_q4_leg.sh list           # menu + scaling notes
+hw4/scripts/run_q4_leg.sh 1              # (a) only → output/q4_4a_Ra1e2_N64/
+Q4_LEG_LOG=hw4/output/logs/q4_leg04.log hw4/scripts/run_q4_leg.sh 4
 ```
 
 This writes `nu_history.csv` under:
@@ -162,13 +170,13 @@ TS_MAX_STEPS=50000 hw4/scripts/run_q4_assignment.sh
 Single manual leg (same as before; use **`sbatch`/`srun`** on clusters for long wall time):
 
 ```bash
-RA=1e2 N=64 TMAX=100000 DT=0.1 VTK_EVERY=0 hw4/scripts/run_q4.sh
+RA=1e2 N=64 TMAX=100000 DT=0.01 VTK_EVERY=0 hw4/scripts/run_q4.sh
 ```
 
 With occasional VTK:
 
 ```bash
-RA=1e4 N=64 TMAX=5000 DT=0.1 VTK_EVERY=500 HW4_OUT=hw4/output/q4_try hw4/scripts/run_q4.sh
+RA=1e4 N=64 TMAX=5000 DT=0.01 VTK_EVERY=500 HW4_OUT=hw4/output/q4_try hw4/scripts/run_q4.sh
 ```
 
 Outputs:

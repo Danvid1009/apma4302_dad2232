@@ -57,7 +57,12 @@ def main():
     parser.add_argument("--ra", type=float, default=1.0e2, help="Rayleigh number")
     parser.add_argument("--n", type=int, default=64, help="Mesh cells per direction (NxN Q1)")
     parser.add_argument("--t-max", type=float, default=1.0e5, help="End time for TS")
-    parser.add_argument("--dt", type=float, default=0.1, help="Fixed time step")
+    parser.add_argument(
+        "--dt",
+        type=float,
+        default=0.01,
+        help="Initial/nominal time step (--ts-dt hint); PETSc adaptive TS adjusts dt unless --ts-fixed-step",
+    )
     parser.add_argument("--A", type=float, default=0.1, help="Initial T perturbation amplitude")
     parser.add_argument("--vtk-every", type=float, default=0.0, help="Write VTK every this many time units (0=off)")
     parser.add_argument("--nu-every", type=int, default=10, help="Print / log Nu every this many TS steps")

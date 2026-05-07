@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # HW4 Q4: convection DAE (firedrake-ts). Override RA, N, TMAX, DT via env vars.
+# DT default 0.01 matches typical PETSc first-step hint (adaptive TS still resizes Δt unless TS_FIXED_STEP=1).
 # Optional: TS_RTOL, TS_ATOL → --ts-rtol / --ts-atol (stiff high-Ra runs).
 # Optional: TS_MAX_STEPS → --ts-max-steps N (PETSc cap; run may end before t_max).
 # Optional: TS_FIXED_STEP=1 → --ts-fixed-step (fixed dt=t_max/N roughly; raises DT env useful).
@@ -15,7 +16,8 @@ cd "${HW4_ROOT}/python"
 RA="${RA:-1e2}"
 N="${N:-64}"
 TMAX="${TMAX:-1e5}"
-DT="${DT:-0.1}"
+# Default matches common firedrake-ts / PETSc first step (e.g. sample logs dt_init≈1e-2).
+DT="${DT:-0.01}"
 OUT="${HW4_OUT:-${HW4_ROOT}/output/q4_ra${RA}_n${N}}"
 
 echo "Running convection.py Ra=${RA} N=${N} t_max=${TMAX} dt=${DT} -> ${OUT}"

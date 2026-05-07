@@ -10,8 +10,8 @@
 #     export HW4_APPTAINER_BIND="$HOME:$HOME"
 #
 # Optional overrides (all times are dimensionless t as in the prompt):
-#   DT=0.1                  TS step size: with default adaptive TS, PETSc adjusts dt from
-#                           this hint; use TS_FIXED_STEP=1 so DT is the actual fixed step (~t_max/dt steps).
+#   DT=0.01                 Default initial TS step (--ts-dt hint; adaptive adjusts). Use TS_FIXED_STEP=1
+#                           so DT is the actual fixed step (~t_max/dt steps).
 #   TMAX_4A=100000          part (a) end time (default 100000 = 10^5)
 #   TMAX_4B=100000          part (b) end time per Ra (raise if Nu not steady)
 #   TMAX_4C=100000          part (c) end time per mesh (raise toward Blankenbach steady Nu)
@@ -33,7 +33,7 @@ source "${SCRIPT_DIR}/inc_firedrake_apptainer.sh"
 
 HW4_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-DT="${DT:-0.1}"
+DT="${DT:-0.01}"
 VTK_EVERY="${VTK_EVERY:-${VTK:-0}}"
 
 TMAX_4A="${TMAX_4A:-100000}"
