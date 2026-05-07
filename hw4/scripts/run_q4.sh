@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # HW4 Q4: convection DAE (firedrake-ts). Override RA, N, TMAX, DT via env vars.
 # Optional: TS_RTOL, TS_ATOL → --ts-rtol / --ts-atol (stiff high-Ra runs).
+# Optional: TS_MAX_STEPS → --ts-max-steps N (PETSc cap; run may end before t_max).
+# Optional: TS_FIXED_STEP=1 → --ts-fixed-step (fixed dt=t_max/N roughly; raises DT env useful).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,6 +25,12 @@ fi
 TS_EXTRA=()
 [[ -n "${TS_RTOL:-}" ]] && TS_EXTRA+=(--ts-rtol "${TS_RTOL}")
 [[ -n "${TS_ATOL:-}" ]] && TS_EXTRA+=(--ts-atol "${TS_ATOL}")
+if [[ "${TS_MAX_STEPS:-}" =~ ^[1-9][0-9]*$ ]]; then
+  TS_EXTRA+=(--ts-max-steps "${TS_MAX_STEPS}")
+fi
+if [[ "${TS_FIXED_STEP:-}" == "1" || "${TS_FIXED_STEP:-}" == "yes" ]]; then
+  TS_EXTRA+=(--ts-fixed-step)
+fi
 hw4_python3 convection.py \
   --ra "${RA}" --n "${N}" --t-max "${TMAX}" --dt "${DT}" \
   --output-dir "${OUT}" \

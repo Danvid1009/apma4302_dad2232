@@ -86,6 +86,19 @@ def main():
         default=1e-10,
         help="PETSc TS absolute tolerance (larger → often faster for stiff Ra)",
     )
+    parser.add_argument(
+        "--ts-max-steps",
+        type=int,
+        default=0,
+        metavar="N",
+        help="PETSc TS max accepted steps (0 = no cap). Stops early if hit; t may be < t_max.",
+    )
+    parser.add_argument(
+        "--ts-fixed-step",
+        action="store_true",
+        help="PETSc TS fixed step: disables adaptivity (ts_adapt_type=none); --dt is the step (~t_max/dt steps). "
+        "Faster toward t_max when stable; large dt may fail or be inaccurate at high Ra.",
+    )
     args = parser.parse_args()
 
     mesh = UnitSquareMesh(args.n, args.n, quadrilateral=True)
@@ -140,9 +153,14 @@ def main():
         "pc_type": "lu",
         "pc_factor_mat_solver_type": "mumps",
         "ts_max_time": t_max,
-        "ts_adapt_dt_min": 1.0e-9,
         "ts_exact_final_time": "matchstep",
     }
+    if args.ts_fixed_step:
+        params["ts_adapt_type"] = "none"
+    else:
+        params["ts_adapt_dt_min"] = 1.0e-9
+    if args.ts_max_steps > 0:
+        params["ts_max_steps"] = args.ts_max_steps
 
     os.makedirs(args.output_dir, exist_ok=True)
     csv_path = os.path.join(args.output_dir, "nu_history.csv")

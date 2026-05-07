@@ -10,7 +10,8 @@
 #     export HW4_APPTAINER_BIND="$HOME:$HOME"
 #
 # Optional overrides (all times are dimensionless t as in the prompt):
-#   DT=0.1                  initial TS step / nominal step (PETSc may still adapt)
+#   DT=0.1                  TS step size: with default adaptive TS, PETSc adjusts dt from
+#                           this hint; use TS_FIXED_STEP=1 so DT is the actual fixed step (~t_max/dt steps).
 #   TMAX_4A=100000          part (a) end time (default 100000 = 10^5)
 #   TMAX_4B=100000          part (b) end time per Ra (raise if Nu not steady)
 #   TMAX_4C=100000          part (c) end time per mesh (raise toward Blankenbach steady Nu)
@@ -19,6 +20,10 @@
 #                           at high Ra is stiff: adaptive TS often uses tiny dt → many
 #                           iterations. Loosening (e.g. TS_RTOL=1e-4 TS_ATOL=1e-8) speeds
 #                           runs at some accuracy cost; lowering TMAX_4B shortens drafts.
+#   TS_MAX_STEPS            e.g. 50000 → PETSc stops after that many TS steps (t may be
+#                           below t_max); use for wall-clock caps / smoke tests.
+#   TS_FIXED_STEP=1        fixed timestep (PETSc ts_adapt_type=none); pair with larger DT,
+#                           e.g. DT=500 → ~200 steps to t_max=1e5 (may fail at high Ra if dt too large).
 #
 set -euo pipefail
 
