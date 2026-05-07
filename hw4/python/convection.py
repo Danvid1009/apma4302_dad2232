@@ -12,7 +12,43 @@ import sys
 
 import petsc4py
 
-petsc4py.init(sys.argv)
+_APP_LONG_OPTS = {
+    "--ra",
+    "--n",
+    "--t-max",
+    "--dt",
+    "--A",
+    "--vtk-every",
+    "--nu-every",
+    "--output-dir",
+    "--ds-top",
+    "--ds-bot",
+    "--ts-rtol",
+    "--ts-atol",
+    "--ts-max-steps",
+    "--ts-fixed-step",
+}
+
+
+def _petsc_argv(argv):
+    # petsc4py/PETSc will warn about our app flags as "unused options".
+    # Filter them out while preserving genuine PETSc options (e.g. -ksp_view).
+    out = [argv[0]]
+    skip_next = False
+    for a in argv[1:]:
+        if skip_next:
+            skip_next = False
+            continue
+        if a in _APP_LONG_OPTS:
+            skip_next = True
+            continue
+        if any(a.startswith(f"{opt}=") for opt in _APP_LONG_OPTS):
+            continue
+        out.append(a)
+    return out
+
+
+petsc4py.init(_petsc_argv(sys.argv))
 from firedrake import *  # noqa: E402
 
 import firedrake_ts  # noqa: E402
