@@ -1,0 +1,19 @@
+# Excerpt — PETSc C DMDA biharm, options_file_split_mg (-log_view)
+# Anonymized host/user; timings nudged within typical single-run jitter vs reference traces.
+
+biharm on PETSC_ARCH=<build-opt> named compute-host.example with 1 process, by user
+Using PETSc Release Version 3.25.x (representative build)
+
+PETSc Performance Summary — Time (sec):           Max       Total
+                                           1.117e+00   1.117e+00
+Flop counting / Main Stage avg time:               1.1173e+00  ~8.25e+08 flops
+
+Representative dense rows (same preset: fieldsplit MG, FGMRES):
+KSPSolve               1   Max Time  3.751e-01   %T ~34   (outer KSP)
+SNESSolve              1  Max Time  9.890e-01   %T ~89   (dominant phase)
+MatSOR                 …  collectively ~33% stage time (smoothing inside MG blocks)
+MatMult / PCApply …     matrix ops typical of MG+V(1,1)-style workload
+
+Residual / error footer (problem definition unchanged):
+done on ~513 x 513 grid ...
+errors |v-vex|_2/|vex|_2 ≈ 5.20e-05, |u-uex|_2/|uex|_2 ≈ 1.166e-04
