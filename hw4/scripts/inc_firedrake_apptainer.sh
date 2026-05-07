@@ -6,9 +6,10 @@
 #   export HW4_APPTAINER_BIND=/your/home:/your/home   # optional; default HOME:HOME
 #
 # Slurm + Open MPI in the image: isolated PLM is set unless already overridden.
-# If you launch from `srun`/`sbatch` and see PMI / OPAL errors from MPI_Init, the
-# container Open MPI is picking up SLURM_*; we default to unsetting those when
-# SLURM_JOB_ID is set (override with HW4_APPTAINER_UNSET_SLURM=0 if your site needs PMI).
+# If you launch from `srun`/`sbatch` (or the host injects SLURM_*), in-container
+# Open MPI may try Slurm PMI and abort MPI_Init. We default to unsetting all SLURM_*
+# before `apptainer exec` for single-rank `python3` homework runs. Override with
+# HW4_APPTAINER_UNSET_SLURM=0 only if your site requires PMI inside the container.
 
 hw4_python3() {
   local sif="${HW4_APPTAINER_SIF:-}"
@@ -30,18 +31,17 @@ hw4_python3() {
       fi
     fi
     export OMPI_MCA_plm="${OMPI_MCA_plm:-isolated}"
-    # Default: under Slurm, strip SLURM_* before `apptainer exec` so in-container
-    # mpiexec does not attempt Slurm PMI (often missing / mismatched → MPI_Init failure).
-    local unset_slurm="${HW4_APPTAINER_UNSET_SLURM:-}"
-    if [[ -z "${unset_slurm}" && -n "${SLURM_JOB_ID:-}" ]]; then
-      unset_slurm=1
-    fi
-    if [[ -z "${unset_slurm}" ]]; then
-      unset_slurm=0
-    fi
-    if [[ "${unset_slurm}" == "1" ]]; then
+    # Default: strip SLURM_* before `apptainer exec` (not only when SLURM_JOB_ID is set:
+    # some sessions still export Slurm PMI hints and break in-container MPI_Init).
+    local unset_slurm="${HW4_APPTAINER_UNSET_SLURM:-1}"
+    if [[ "${unset_slurm}" == "0" ]]; then
+      :
+    else
+      local k
       # shellcheck disable=SC2046
-      unset $(printenv | grep '^SLURM_' | cut -d= -f1) || true
+      for k in $(printenv | grep '^SLURM_' | cut -d= -f1 | sort -u); do
+        [[ -n "${k}" ]] && unset "${k}"
+      done
     fi
     # shellcheck disable=SC2086
     "${runner}" exec ${HW4_APPTAINER_EXTRA_ARGS:-} --bind "${bind}" "${sif}" python3 "$@"

@@ -30,6 +30,8 @@ cd <your-repo-directory>
 git pull
 ```
 
+If `git pull` refuses because **local edits** would be overwritten (common on `inc_firedrake_apptainer.sh` after tuning the cluster), run `git stash push -- <path>` for that file, then `git pull`, or discard the file with `git checkout -- <path>` if you do not need your copy.
+
 All homework paths below assume you are at the **repository root** or use absolute paths.
 
 ---
@@ -59,8 +61,7 @@ Optional:
 - `FIREDRAKE_TS_SIF` — used if `HW4_APPTAINER_SIF` is empty (same path).
 - `HW4_APPTAINER_RUNNER` — default: `apptainer`, else `singularity` if only that exists.
 - `HW4_APPTAINER_EXTRA_ARGS` — e.g. `--nv` passed before `--bind`.
-- `HW4_APPTAINER_UNSET_SLURM=1` — unset all `SLURM_*` before `apptainer exec` if Open MPI still tries Slurm PMI and crashes.
-- **Default (since `inc_firedrake_apptainer.sh` update):** if `SLURM_JOB_ID` is set and you do **not** set `HW4_APPTAINER_UNSET_SLURM`, it now defaults to **unset Slurm vars** (fixes common `srun` + Apptainer + `MPI_Init` / PMI errors). Set `HW4_APPTAINER_UNSET_SLURM=0` only if your site requires PMI inside the container.
+- `HW4_APPTAINER_UNSET_SLURM` — **default `1`:** unset all `SLURM_*` before `apptainer exec` so in-container Open MPI does not try Slurm PMI (`MPI_Init` / OPAL errors under `srun`/`sbatch`). Set **`HW4_APPTAINER_UNSET_SLURM=0`** only if your site requires PMI inside the container (e.g. multi-rank MPI launched from Slurm inside the SIF).
 
 The scripts set `OMPI_MCA_plm=isolated` by default when using the SIF (helps under interactive `srun`).
 
