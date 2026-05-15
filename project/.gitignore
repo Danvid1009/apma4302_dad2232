@@ -1,0 +1,15 @@
+# Local / generated (never commit)
+.DS_Store
+.venv/
+__pycache__/
+*.pyc
+.mplconfig/
+overleaf.zip
+
+# Huge VTK (regenerate: scripts/export_*_vtp.py, see output/paraview/vtp/README.md)
+output/paraview/vtp/*.vtp
+output/paraview/vtp/*.vti
+output/background_restarts/
+
+# Duplicate PDF at project root (canonical copy: submission/4302_Final_Project.pdf)
+/4302_Final_Project.pdf

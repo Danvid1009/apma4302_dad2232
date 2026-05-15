@@ -1,0 +1,157 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{float}
+
+\title{PETSc-Based Numerical Methods for PDEs:\\
+ParaView-Driven Visualization Workflow}
+\author{APMA 4302 Project}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This report presents a PETSc-first workflow for solving representative PDE classes
+(elliptic, parabolic, and advection-diffusion), validating numerical behavior, and
+exporting ParaView-ready data for high-quality 3D visualization.
+\end{abstract}
+
+\section{Introduction}
+This project is organized around a PETSc-first workflow: every numerical run must
+produce ParaView-readable outputs before additional analysis is considered complete.
+This constraint keeps the computational and visualization pipelines aligned and
+ensures that each PDE experiment yields both quantitative metrics and interpretable
+field plots.
+
+\section{Mathematical Models}
+\subsection{Poisson Equation}
+\[
+ -\Delta u = f \quad \text{in } \Omega,\qquad u=0 \text{ on } \partial\Omega.
+\]
+\subsection{Heat Equation}
+\[
+ u_t - \kappa \Delta u = g.
+\]
+\subsection{Advection-Diffusion}
+\[
+ u_t + \mathbf{v}\cdot\nabla u - \nu\Delta u = s.
+\]
+
+\section{Numerical Discretization and Solvers}
+We use a structured finite-difference grid on the unit square.
+The Poisson problem is discretized with the standard 5-point Laplacian.
+Heat and advection-diffusion updates are advanced with backward Euler in time,
+leading to a linear system at each step solved through PETSc KSP.
+
+Primary solver settings:
+\begin{itemize}
+  \item Poisson: CG + Jacobi preconditioning.
+  \item Heat: CG + Jacobi preconditioning.
+  \item Advection-diffusion: default \texttt{cg} + Jacobi in the project drivers for parallel-safe implicit steps (GMRES + Jacobi when nonsymmetry is stronger; avoid parallel ILU on distributed matrices).
+\end{itemize}
+
+\section{Implementation Details}
+\begin{itemize}
+  \item Environment alignment with \texttt{PETSC\_DIR} and \texttt{PETSC\_ARCH=apma4302-pkgs-opt}.
+  \item Data layout and MPI distribution.
+  \item Export format \texttt{.vtp} (quad surfaces / polylines) and \texttt{.pvd} time collections for ParaView, under \texttt{output/paraview/vtp/}.
+\end{itemize}
+
+\section{Verification and Convergence}
+For Poisson verification, the numerical solution is compared to the analytic
+reference \(u(x,y)=\sin(\pi x)\sin(\pi y)\). The spatial error decreases
+consistently under mesh refinement, as shown in Figure~\ref{fig:spatial-conv}.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.72\textwidth]{visuals/spatial_convergence_loglog.png}
+  \caption{Poisson spatial convergence on progressively finer grids.}
+  \label{fig:spatial-conv}
+\end{figure}
+
+\section{Performance Evaluation}
+Strong scaling was measured with repeated runs on the same \(1201\times 1201\)
+problem to quantify runtime variability.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{rrrrrr}
+    \toprule
+    Ranks & Count & Mean time (s) & Std (s) & Speedup & Efficiency \\
+    \midrule
+    1 & 6 & 0.02453 & 0.00188 & 1.00 & 1.00 \\
+    2 & 5 & 0.01620 & 0.00237 & 1.51 & 0.76 \\
+    4 & 5 & 0.01348 & 0.00448 & 1.82 & 0.45 \\
+    8 & 5 & 0.04346 & 0.03091 & 0.56 & 0.07 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Strong-scaling summary from repeated runs (\texttt{strong\_scaling\_summary.csv}).}
+\end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.72\textwidth]{visuals/strong_scaling_speedup_errorbars.png}
+  \caption{Strong-scaling speedup with mean \(\pm\) one standard deviation.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.72\textwidth]{visuals/strong_scaling_runtime_errorbars.png}
+  \caption{Runtime variability by MPI rank, showing overhead-dominated behavior at 8 ranks.}
+\end{figure}
+
+\section{Visualization Results}
+\subsection{Poisson}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{visuals/poisson_solution_surface.png}
+  \caption{Poisson solution field rendered in ParaView.}
+\end{figure}
+
+\subsection{Heat}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.72\textwidth]{visuals/heat_t0.png}
+  \caption{Representative heat-equation snapshot exported from ParaView.}
+\end{figure}
+
+\subsection{Advection-Diffusion}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.72\textwidth]{visuals/advection_diffusion_volume.png}
+  \caption{Advection-diffusion concentration at a representative late-time snapshot.}
+\end{figure}
+
+\section{Discussion}
+The verification and scaling experiments show that the numerical pipeline is
+functionally correct and produces reproducible artifacts. The Poisson refinement
+study confirms expected error reduction, while repeated strong-scaling runs
+illustrate a practical compute-communication trade-off: gains are clear up to
+4 ranks for this workload, but the 8-rank regime becomes variance-heavy and
+overhead-dominated on the current machine.
+
+The visualization workflow is also now reliable: each solver writes ParaView-ready
+\texttt{.pvd/.vtp} data, and report figures are generated from those exports rather
+than hand-built plotting paths. This directly satisfies the original project
+constraint that simulation outputs must be useful for ParaView-driven interpretation.
+
+Limitations include short wall-clock solves for some test cases, which can amplify
+runtime noise, and the use of representative snapshots for heat/advection figures
+instead of full animation panels.
+
+\section{Conclusion and Future Work}
+This project now has an end-to-end PETSc-to-ParaView pipeline with validated
+numerical behavior, usable performance characterization, and report-ready visuals.
+The workflow is immediately portable to Overleaf by keeping figures in a single
+directory and including them by filename.
+
+Natural next steps are: (i) larger scaling workloads and additional repetitions
+for tighter confidence intervals, (ii) richer time-series visualization products
+(animation strips), and (iii) extension to true 3D discretizations and more
+advanced preconditioners.
+
+\end{document}
