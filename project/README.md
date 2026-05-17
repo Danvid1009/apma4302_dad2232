@@ -1,6 +1,6 @@
 # Parallel Monte Carlo Option Pricing (PETSc)
 
-**Final submission:** see [`SUBMISSION.md`](SUBMISSION.md) and [`submission/4302_Final_Project.pdf`](submission/4302_Final_Project.pdf). Git branch: `final-project`.
+**Final submission:** see [`SUBMISSION.md`](SUBMISSION.md) and [`submission/4302_Final_Project_Submission.pdf`](submission/4302_Final_Project_Submission.pdf). Git branch: `final-project`.
 
 This project implements parallel Monte Carlo pricing for:
 - European call
@@ -18,8 +18,8 @@ It is aligned to `PROJECT_OUTLINE.md` and includes:
 1. Create environment and install dependencies:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+python -m venv ../.venv   # outside project/ so git stays fast
+source ../.venv/bin/activate
 pip install -r requirements.txt
 ```
 

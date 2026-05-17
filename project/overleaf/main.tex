@@ -19,7 +19,7 @@
 \graphicspath{{figures/}}
 
 \title{\textbf{Parallel Monte Carlo Option Pricing with PETSc:}\\
-HPC reductions, calibrated volatility, and PETSc PDE / Krylov demos}
+HPC reductions, calibrated volatility, and PETSc PDE / Krylov}
 \author{APMA 4302 --- Columbia University\\
 \small (Daniel David / UNI: dad2232)}
 \date{\today}
@@ -28,9 +28,8 @@ HPC reductions, calibrated volatility, and PETSc PDE / Krylov demos}
 \maketitle
 
 \begin{abstract}
-This report documents a deliberately \textbf{broad} scientific computing project that
-ties together three threads normally taught as separate weeks in a PETSc-aware
-numerical methods / HPC curriculum: \textbf{(i)} scalable Monte Carlo estimation with
+This report documents a deliberately broad scientific computing project that
+ties together three PETSc-aware threads: \textbf{(i)} scalable Monte Carlo estimation with
 rigorous uncertainty quantification, \textbf{(ii)} sparse linear algebra and
 preconditioned Krylov solvers on representative PDE discretizations, and
 \textbf{(iii)} reproducible visualization of fields and trajectories through
@@ -41,15 +40,17 @@ The PDE thread follows the \emph{matrix--vector--solver} pedagogy of Bueler's SI
 text~\cite{bueler2020petsc}: Poisson on structured grids, implicit heat and
 advection--diffusion time steps, and small diagnostic sweeps over \textsf{KSP} and
 \textsf{PC} choices. A scalar \textbf{SNES} solve recovers implied volatility from
-Black--Scholes as a clean nonlinear equation example. \textbf{Phase~2} connects the
-same Monte Carlo engine to \textbf{historical SPY data}: rolling realized volatility
-replaces a toy constant $\sigma$, and a roll-forward experiment reprices an
-ATM-style call along a sparse calendar of market snapshots.
+Black--Scholes as a clean nonlinear equation example. 
+\medskip
+
+The second phase connects the same Monte Carlo engine to \textbf{historical SPY}
+(SPDR S\&P 500 ETF) daily prices from Yahoo Finance~\cite{yahoofinance,yfinance,spy-etf}:
+rolling realized volatility replaces a toy constant $\sigma$, and a roll-forward
+experiment reprices an ATM-style call along a sparse calendar of market snapshots.
 
 \medskip
-\noindent\textbf{Primary aim.}
-The goal of this project was \emph{neither} finance \emph{nor} PDE theory for their own
-sake: those threads are \textbf{vehicles} for practicing a single style of work at
+The goal of this project was neither finance nor PDE theory for their own
+sake: using both as for practicing a single style of work at
 scale---\textbf{PETSc + MPI} programming with partitioned data, global reductions,
 solver objects, and honestly reported timings. Monte Carlo paths and grid-based PDE
 steps simply expose \emph{different} dominant costs (sampling vs.\ sparse linear
@@ -60,21 +61,26 @@ That unification is what large-scale scientific computing increasingly expects f
 practitioners who must move between kernels without reinventing their software stack
 each time~\cite{petsc-efficient}.
 
+
 \medskip
-\noindent\textbf{Citations in one line.}
+\noindent\textbf{Citations overview.}
 Options theory follows Black--Scholes and Merton~\cite{blackscholes,merton1973};
+Phase~2 market inputs use SPY adjusted closes from Yahoo Finance via
+\texttt{yfinance}~\cite{yahoofinance,yfinance,spy-etf};
 PETSc software practice follows Balay et al.~\cite{petsc-user-ref,petsc-efficient};
 PDE discretization + Krylov/Newton intuition follows Bueler~\cite{bueler2020petsc};
 visualization practice follows Ahrens et al.~\cite{paraview-guide}.
 \end{abstract}
 
+\newpage
+
 \tableofcontents
 \newpage
 
-\section{Introduction: problem, audience, and claims}
+\section{Introduction: problem and claims}
 
 \subsection{The motivating tension}
-Monte Carlo (MC) option pricing is attractive because it scales gracefully in the
+Monte Carlo (MC) option pricing is attractive because it scales well in the
 number of paths and because it extends to payoffs where closed forms are awkward
 (e.g.\ path-dependent Asian averages and barrier knock-out structures). Yet MC is
 not ``free parallelism'': one still needs deterministic reproducibility policies,
@@ -84,11 +90,11 @@ collectives and load imbalance enter the story.
 At the same time, a PETSc-centered numerical methods course emphasizes different
 bottlenecks: sparse matrix assembly, preconditioned Krylov iterations, and nonlinear
 solvers~\cite{bueler2020petsc}. Those kernels look different from MC on the surface,
-but they share a common engineering spine: \textbf{partition data, compute locally,
-reduce globally, measure time and iteration counts honestly}~\cite{petsc-efficient}.
+but they share a common engineering spine: partition data, compute locally,
+reduce globally, measure time and iteration counts honestly~\cite{petsc-efficient}.
 
 \subsection{What we claim this repository demonstrates}
-We claim three \textbf{research-grade} outcomes supported by artifacts in the report
+We claim three research outcomes supported by artifacts in the report
 figures and CSV logs:
 \begin{enumerate}[leftmargin=*]
   \item \textbf{Statistical correctness and scaling of the MC pricer:} European
@@ -103,29 +109,26 @@ figures and CSV logs:
   exports document time-evolving fields consistent with implicit stepping, and
   trajectory \texttt{.vtp} bundles connect the Monte Carlo thread to the same
   visualization discipline~\cite{paraview-guide}.
-  \item \textbf{Phase~2 realism:} realized volatility from historical SPY data is
+  \item \textbf{Historical realism:} realized volatility from historical SPY data is
   materially time-varying; roll-forward repricing shows how the \emph{same} MC
   engine responds when inputs drift with the market rather than remaining stylized
   constants.
 \end{enumerate}
 
-\subsection{Where the ideas came from (intellectual lineage)}
-The \textbf{financial modeling} layer is textbook GBM risk-neutral pricing as
+\subsection{Where the ideas came from}
+The financial modeling layer is textbook GBM risk-neutral pricing as
 presented in foundational derivatives references~\cite{blackscholes,merton1973}.
-The \textbf{PETSc object model} (Vec, Mat, KSP, PC, SNES) and the habit of treating
+The PETSc object model (Vec, Mat, KSP, PC, SNES) and the habit of treating
 performance as a first-class output follow the PETSc team's user manual and the
-original PETSc software paper~\cite{petsc-user-ref,petsc-efficient}. The
-\textbf{PDE discretization + Krylov + Newton} narrative is intentionally aligned with
+original PETSc software paper, and class (of course) ~\cite{petsc-user-ref,petsc-efficient}. The
+PDE discretization + Krylov + Newton narrative is intentionally aligned with
 Bueler's \emph{PETSc for Partial Differential Equations}~\cite{bueler2020petsc},
 because that book is written precisely for readers who need to connect mathematical
 definitions to working code: structured grids, residual-based stopping, and
 preconditioner choices that are not black boxes.
 
-The \textbf{visualization} layer follows standard ParaView practice for scientific
-vector/tensor data~\cite{paraview-guide}. The project-specific runbook is
-\textbf{Appendix A} of \texttt{PROJECT\_OUTLINE.md} in the repository (legacy filename
-\texttt{PARAVIEW\_GUIDE\_PETSC.md} redirects there); it documents how \texttt{.pvd} time
-collections and \texttt{.vtp} surface snapshots were produced from PETSc fields.
+The visualization layer follows standard ParaView practice for scientific
+vector/tensor data~\cite{paraview-guide}.
 
 \section{Mathematical models}
 \subsection{Option pricing under GBM}
@@ -141,18 +144,23 @@ different parallel workload shapes (e.g.\ barrier paths may terminate early in
 alternative implementations; here the emphasis is on statistical behavior vs.\
 barrier level sweeps).
 
-\subsection{Representative PDEs (PETSc demos)}
-Poisson (elliptic), heat (parabolic), and linear advection--diffusion models follow
-the formulations and discretization narrative in Bueler~\cite{bueler2020petsc}:
+\subsection{Grid PDEs as the solver-dominated workload}
+The PDE thread supplies the \textbf{sparse linear algebra} side of the project:
+each model is a standard classroom example from Bueler~\cite{bueler2020petsc}, chosen
+so the same PETSc objects (\textsf{Mat}, \textsf{Vec}, \textsf{KSP}, \textsf{PC})
+appear in settings that differ in symmetry and time structure:
 \begin{align*}
-  -\Delta u &= f \quad \text{(Poisson)},\\
-  u_t - \kappa \Delta u &= g \quad \text{(heat)},\\
-  u_t + \mathbf{v}\!\cdot\!\nabla u - \nu \Delta u &= s \quad \text{(advection--diffusion)}.
+  -\Delta u &= f && \text{(Poisson: one elliptic solve, spatial convergence)},\\
+  u_t - \kappa \Delta u &= g && \text{(heat: repeated SPD steps, ParaView movies)},\\
+  u_t + \mathbf{v}\!\cdot\!\nabla u - \nu \Delta u &= s &&
+  \text{(advection--diffusion: nonsymmetric shifts, parallel-safe PC choices)}.
 \end{align*}
-These are not ``toy unrelated PDEs'': they are the canonical PDE classes used to
-introduce FD stencils, stability of implicit time stepping, and the nonsymmetric
-shifts induced by advection operators---exactly the vocabulary Bueler uses to build
-toward realistic PETSc workflows~\cite{bueler2020petsc}.
+Structured five-point stencils on the unit square discretize all three; implicit
+Euler in time reduces the parabolic problems to a linear system per step. The
+point for this report is not PDE theory but repeatable solver practice:
+assemble, solve with instrumented \textsf{KSP}, export \texttt{.vtp}/\texttt{.pvd}
+for inspection, and record iteration counts alongside wall time~\cite{bueler2020petsc,petsc-user-ref}.
+
 
 \section{Numerical methods and PETSc objects}
 \subsection{Finite differences and Krylov solvers}
@@ -209,18 +217,17 @@ dashboard (Figure~\ref{fig:hpc-dashboard}) is therefore best read as an empirica
 case study: where speedup bends, whether weak scaling keeps wall time flat, and
 how sensitive timings are to launcher overhead and work per rank.
 
-\section{Phase~2: why historical volatility is scientifically meaningful}
+\section{Ground Truth: why historical volatility is scientifically meaningful}
 A constant $\sigma$ is a modeling convenience, not a claim about markets. Phase~2
-replaces that convenience with \textbf{rolling realized volatility} estimated from
-log returns over a trailing window of trading days, then feeds the resulting
+replaces that convenience with rolling realized volatility estimated from
+log returns over a trailing window of trading days (data provenance in
+Section~\ref{sec:data-sources}), then feeds the resulting
 $\sigma_{\mathrm{roll}}(t)$ into the same MC pricer used in Phase~1.
 
-\paragraph{What this buys you.}
-It connects the project to \textbf{data conditioning} and \textbf{nonstationarity}:
+This connects the project to data conditioning and nonstationarity:
 the volatility input is now path-dependent on the market history, which is closer
 to how practitioners think about risk metrics than a single hard-coded constant.
 
-\paragraph{How we read the figures.}
 Figure~\ref{fig:phase2-spy} shows the input regime: SPY's level and the rolling
 annualized $\sigma$ spike around stress periods (e.g.\ 2020), which is exactly the
 kind of ``volatility as a signal'' narrative implied by realized-vol estimators.
@@ -237,10 +244,10 @@ the expected refinement behavior on a classical elliptic model~\cite{bueler2020p
 
 \subsection{PC and KSP sweeps as comparative studies}
 The PC sweep (Figure~\ref{fig:pc-sweep}) and KSP sweep (Figure~\ref{fig:ksp-sweep})
-are intentionally modest \textbf{comparative experiments}: they record iteration
+are intentionally modest comparative experiments: they record iteration
 counts and wall times under controlled changes to solver configuration. The
-research conclusion is not ``Jacobi always wins''---it is that \textbf{solver
-performance is empirical}, and PETSc makes such empirical questions cheap to ask
+research conclusion is not ``Jacobi always wins''---it is that solver
+performance is empirical, and PETSc makes such empirical questions cheap to ask
 once the discretization is in place~\cite{bueler2020petsc,petsc-user-ref}. On coarse
 grids, iteration counts can collapse to a single iteration; finer meshes separate
 methods more clearly, which is itself a useful student observation.
@@ -252,7 +259,7 @@ pattern is a legitimate HPC conclusion: parallel efficiency is a function of pro
 size, communication cost, and the quality of load balance~\cite{petsc-efficient}.
 
 \section{Time-dependent fields and trajectory visualization (ParaView)}
-This section embeds representative \textbf{ParaView} (or ParaView-equivalent) stills
+This section embeds representative ParaView (or ParaView-equivalent) stills
 directly in the PDF: PDE snapshots (Figures~\ref{fig:heat}--\ref{fig:advdiff}), Monte
 Carlo and enriched trajectory bundles (Figures~\ref{fig:paraview-mc-bundle}--\ref{fig:paraview-stock-geom}),
 and the synthetic MPI batch metaphor (Figure~\ref{fig:paraview-mpi}). The broader
@@ -263,14 +270,14 @@ timings~\cite{bueler2020petsc,paraview-guide}. Regenerate the underlying
 \texttt{.vtp}/\texttt{.pvd} files with the commands in \texttt{PROJECT\_OUTLINE.md}
 Appendix~A whenever parameters change; keep \texttt{overleaf/figures/} in sync before
 submission (Section~\ref{sec:remaining}).
-The trajectory stills connect the Monte Carlo story to \textbf{geometry}: how
+The trajectory stills connect the Monte Carlo story to geometry: how
 batching, barriers, and pathwise risk summaries appear once paths are embedded in a
 viewable $(t,S,z)$ space rather than remaining only as CSV columns.
 
 \begin{figure}[!h]
   \centering
 
-  \begin{subfigure}{0.42\textwidth}
+  \begin{subfigure}{0.38\textwidth}
     \centering
     \includegraphics[width=\linewidth]{heat_t0.png}
     \caption[Heat $t\!\approx\!0$]{Heat equation at an early time: this frame exists to show that the
@@ -283,8 +290,7 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
     expected before studying later-time diffusion.}
     \label{fig:heat}
   \end{subfigure}
-  \hfill
-  \begin{subfigure}{0.45\textwidth}
+  \begin{subfigure}{0.4\textwidth}
     \centering
     \includegraphics[width=\linewidth]{advection_diffusion_volume.png}
     \caption[Advection--diffusion snapshot]{Advection--diffusion concentration: this snapshot ties the
@@ -293,7 +299,7 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
     about parallel ILU vs.\ Jacobi tangible: the field is the outcome of the same
     Krylov solve whose iteration counts we later sweep. The ``hills'' and drifted
     structure read as combined transport and spreading---if the velocity field were
-    turned off, the plume would relax toward a simpler diffusion patch.}
+    turned off, the plume would relax toward a simpler diffusion patch.\\ \\}
     \label{fig:advdiff}
   \end{subfigure}
 
@@ -305,9 +311,10 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
   \label{fig:snapshots}
 \end{figure}
 
+\newpage
 \begin{figure}[!h]
   \centering
-  \begin{subfigure}{0.48\textwidth}
+  \begin{subfigure}{0.38\textwidth}
     \centering
     \includegraphics[width=\linewidth]{paraview_path_bundle_vtp.png}
     \caption[Path bundle, price coloring]{GBM \texttt{path\_bundle.vtp} (Monte Carlo exporter): lines are
@@ -321,7 +328,7 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
     \label{fig:paraview-path-price}
   \end{subfigure}
   \hfill
-  \begin{subfigure}{0.48\textwidth}
+  \begin{subfigure}{0.43\textwidth}
     \centering
     \includegraphics[width=\linewidth]{paraview_path_bundle_path_id.png}
     \caption[Path bundle, path ID]{Same geometry with \texttt{path\_id} as the scalar: each path is a
@@ -330,7 +337,7 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
     ranks exist in PETSc, we already partition work by path index. The dense bundle
     shape should look like a correlated forest, not a surface: if it looked like a
     triangulated sheet, that would indicate a wrong ParaView representation (e.g.\
-    triangulating points as a surface).}
+    triangulating points as a surface).\\ \\}
     \label{fig:paraview-path-pid}
   \end{subfigure}
   \caption[Monte Carlo path bundle in ParaView]{Monte Carlo path bundle (\texttt{path\_bundle.vtp}): two
@@ -341,7 +348,7 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
 
 \begin{figure}[!h]
   \centering
-  \begin{subfigure}{0.32\textwidth}
+  \begin{subfigure}{0.29\textwidth}
     \centering
     \includegraphics[width=\linewidth]{paraview_path_bundle_terminal_price.png}
     \caption{\texttt{terminal\_price} (per-path terminal level, replicated along the
@@ -351,12 +358,12 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
     \label{fig:pv-term}
   \end{subfigure}
   \hfill
-  \begin{subfigure}{0.32\textwidth}
+  \begin{subfigure}{0.30\textwidth}
     \centering
     \includegraphics[width=\linewidth]{paraview_max_drawdown.png}
     \caption{\texttt{max\_drawdown} summarizes pathwise depth of drawdowns; larger
     values (warmer) are paths that dipped far below their running maximum before
-    recovering. It matters for risk narratives beyond the terminal value alone.}
+    recovering. It matters for risk narratives beyond the terminal value alone. \\}
     \label{fig:pv-dd}
   \end{subfigure}
   \hfill
@@ -366,7 +373,7 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
     \caption{\texttt{knocked\_out} is essentially binary here: paths that touched the
     barrier level are one color, survivors another. The split should read as
     \textbf{geometry interacting with a threshold}, analogous to barrier option
-    knock-out events.}
+    knock-out events.\\ \\ \\}
     \label{fig:pv-ko}
   \end{subfigure}
   \caption[Stock-path bundle scalars]{Enriched GBM export (\texttt{stock\_paths.vtp}): pathwise summaries
@@ -394,7 +401,7 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
     \caption{\texttt{barrier\_gap} measures how far a path's running maximum stayed
     \emph{below} the barrier (in price units, floored at zero). Large gaps (warm)
     mean ``never came close''; small gaps mean near-touching---the visual complement
-    to knock-out indicators.}
+    to knock-out indicators.\\}
     \label{fig:pv-bg}
   \end{subfigure}
   \caption[Composite path-risk scalars]{Composite scalars on \texttt{stock\_paths.vtp}: these are not
@@ -403,37 +410,9 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
   \label{fig:paraview-stock-geom}
 \end{figure}
 
-\begin{figure}[!h]
-  \centering
-  \begin{subfigure}{0.48\textwidth}
-    \centering
-    \includegraphics[width=\linewidth]{paraview_mpi_domain_paths.png}
-    \caption[Synthetic MPI batches]{Synthetic ``MPI rank'' coloring of path batches (\texttt{mpi\_domain\_paths.vtp}).
-    \textbf{Context:} the exporter tags each path batch with an integer rank for
-    visualization only. \textbf{Why it matters:} it makes the SPMD \emph{decomposition}
-    metaphor visible before jumping to mesh partitioning. \textbf{How to read it:}
-    separated hue families mean batches are distinct; this is not literal
-    \texttt{MPI\_COMM\_WORLD} telemetry from a solver run.}
-    \label{fig:pv-mpi-default}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}{0.48\textwidth}
-    \centering
-    \includegraphics[width=\linewidth]{paraview_mpi_pretty.png}
-    \caption[Pretty MPI paths]{``Pretty'' parameters (more paths/steps) for the same synthetic rank
-    coloring (\texttt{pretty\_mpi\_domain\_paths.vtp}). Denser bundles emphasize how
-    rank-separated batches fill space when the workload increases---useful for
-    presentations even though the underlying model remains stylized GBM.}
-    \label{fig:pv-mpi-pretty}
-  \end{subfigure}
-  \caption[Synthetic MPI path metaphor]{MPI path metaphor (matplotlib render of polylines with cool--warm
-  coloring by \texttt{mpi\_rank}; see \texttt{scripts/render\_mpi\_paths\_png.py}).
-  These figures exist so the PDF carries a visual even when native ParaView Tube
-  screenshots are not embedded.}
-  \label{fig:paraview-mpi}
-\end{figure}
 
 \newpage
+
 \section{Figures: Monte Carlo and HPC dashboards}
 \label{sec:figures-mc}
 
@@ -441,10 +420,10 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
   \centering
   \includegraphics[width=\figw]{hpc_scaling_dashboard.png}
   \caption[HPC scaling dashboard]{HPC scaling dashboard: this figure compresses strong and weak scaling
-  experiments into one glanceable page. \textbf{Context:} it summarizes timings and
-  speedups from the repository's scaling drivers. \textbf{Why it matters:} parallel
+  experiments into one glanceable page. It summarizes timings and
+  speedups from the repository's scaling drivers. Parallel
   MC is not automatically linear speedup---collectives, load balance, and fixed problem
-  size all bend the curves. \textbf{How to read it:} near-linear segments mean
+  size all bend the curves. Near-linear segments mean
   additional ranks buy wall time; flattening or downturns mean communication or
   insufficient work per rank dominates.}
   \label{fig:hpc-dashboard}
@@ -463,49 +442,36 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
 \end{figure}
 
 \begin{figure}[!h]
-
   \centering
 
-  \begin{subfigure}{0.4\textwidth}
-
+  \begin{subfigure}[t]{0.48\textwidth}
     \centering
-
     \includegraphics[width=\linewidth]{convergence.png}
-
     \caption[Error vs.\ $N$]{Monte Carlo error vs.\ path count $N$ on log--log scales. A line near slope
     $-1/2$ is the signature of square-root Monte Carlo error decay; systematic offsets
     between markers usually mean different RNG streams, antithetic pairing, or
     payoff implementations---not ``better physics'' by themselves.}
-
     \label{fig:conv-n}
-
   \end{subfigure}
-
   \hfill
-
-  \begin{subfigure}{0.4\textwidth}
-
+  \begin{subfigure}[t]{0.48\textwidth}
     \centering
     \includegraphics[width=\linewidth]{error_surface_abs_err.png}
-
     \caption[Error surface]{Absolute error over $(N,\sigma)$: this surface makes the \textbf{coupled}
     sensitivity to both sample count and volatility visible. Ridges or hot spots
     flag regimes where either sampling is insufficient or $\sigma$ moves the payoff
     into a harder region (e.g.\ near the money with large diffusion).}
-
     \label{fig:error-surface}
-
   \end{subfigure}
 
   \caption[European MC error summary]{European Monte Carlo convergence and absolute error comparison against
   Black--Scholes: together the panels connect \emph{statistical} error budgets to a
   two-parameter experimental sweep, mirroring how practitioners explore both
   discretization and sampling uncertainty.}
-
   \label{fig:mc-error-summary}
 
 \end{figure}
-
+\newpage
 \begin{figure}[!h]
   \centering
   \includegraphics[width=\figw]{hpc_barrier_geometry_story.png}
@@ -517,46 +483,42 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
   \label{fig:barrier}
 \end{figure}
 
-\begin{figure}[!h]
-  \centering
-  \includegraphics[width=\figw]{solver_compare_runtime.png}
-  \caption[Solver vs.\ MC runtime]{Solver vs.\ Monte Carlo runtime comparison: this plot places two
-  different PETSc ``worlds'' on the same axis---sampling-dominated vs.\
-  linear-solve-dominated work. It matters because the report's thesis is that the
-  \textbf{same engineering discipline} (honest timings, reproducible scripts) applies
-  to both even when the bottleneck moves. Relative ordering that flips with problem
-  size is normal: tiny linear solves are launcher-bound, while large MC runs become
-  communication-bound.}
-  \label{fig:solver-vs-mc}
-\end{figure}
-
-\section{Figures: Phase~2 inputs and roll-forward}
+\newpage
+\section{Figures: Historical inputs and roll-forward}
 
 \begin{figure}[!h]
   \centering
-  \includegraphics[width=\figw]{phase2_spy_price_and_vol.png}
-  \caption[SPY and realized vol]{SPY price path with rolling $252$-day annualized realized volatility.
-  \textbf{Context:} Phase~2 replaces constant $\sigma$ with a data-driven process.
-  \textbf{Why it matters:} it shows \textbf{nonstationarity}---the same MC engine will
-  ingest different vol inputs on different roll dates. \textbf{How to read it:}
-  volatility spikes (right axis) should align visually with fast market moves
-  (left axis); a flat vol line would mean the rolling window lost responsiveness or
-  the data feed is incomplete.}
-  \label{fig:phase2-spy}
+
+  \begin{subfigure}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{phase2_spy_price_and_vol.png}
+    \caption[SPY and realized vol]{SPY price path with rolling $252$-day annualized realized volatility.
+    \textbf{Context:} Phase~2 replaces constant $\sigma$ with a data-driven process.
+    \textbf{Why it matters:} it shows \textbf{nonstationarity}---the same MC engine will
+    ingest different vol inputs on different roll dates. \textbf{How to read it:}
+    volatility spikes (right axis) should align visually with fast market moves
+    (left axis); a flat vol line would mean the rolling window lost responsiveness or
+    the data feed is incomplete.}
+    \label{fig:phase2-spy}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{phase2_roll_forward_panel.png}
+    \caption[Roll-forward panel]{Roll-forward calibrated $\sigma$ and repriced call (twin axes).
+    \textbf{Context:} each roll date refreshes the volatility input and re-runs pricing.
+    \textbf{Why it matters:} it proves the ``same code, moving inputs'' story for the
+    report's Phase~2 claim. \textbf{How to read it:} parallel movements in call value
+    and $\sigma$ indicate the dominant sensitivity is vega/vol; divergences would
+    point to moneyness or rate effects creeping in through the pricing surface.}
+    \label{fig:phase2-roll}
+  \end{subfigure}
+
+  \caption[Phase~2 input and roll-forward summary]{Phase~2 market input and roll-forward repricing summary.}
+  \label{fig:phase2-summary}
 \end{figure}
 
-\begin{figure}[!h]
-  \centering
-  \includegraphics[width=\figw]{phase2_roll_forward_panel.png}
-  \caption[Roll-forward panel]{Roll-forward calibrated $\sigma$ and repriced call (twin axes).
-  \textbf{Context:} each roll date refreshes the volatility input and re-runs pricing.
-  \textbf{Why it matters:} it proves the ``same code, moving inputs'' story for the
-  report's Phase~2 claim. \textbf{How to read it:} parallel movements in call value
-  and $\sigma$ indicate the dominant sensitivity is vega/vol; divergences would
-  point to moneyness or rate effects creeping in through the pricing surface.}
-  \label{fig:phase2-roll}
-\end{figure}
-
+\newpage
 \section{Figures: Poisson verification, sweeps, and scaling}
 
 \begin{figure}[!h]
@@ -625,34 +587,28 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
 
 \begin{figure}[!h]
   \centering
-  \includegraphics[width=\figw]{strong_scaling_speedup_errorbars.png}
-  \caption[Strong scaling speedup]{Poisson strong scaling: speedup with error bars across repeated trials.
-  \textbf{Context:} fixed grid, increasing ranks. \textbf{Why it matters:} shows
-  whether additional processes reduce wall time in practice. \textbf{How to read it:}
-  error bars that overlap the ideal speedup line mean variability is comparable to
-  the claimed gain---a common outcome on laptops or shared clusters.}
-\end{figure}
 
-\begin{figure}[!h]
-  \centering
-  \includegraphics[width=\figw]{strong_scaling_runtime_errorbars.png}
-  \caption[Strong scaling runtime]{Poisson strong scaling: runtime variability by rank count.
-  \textbf{Context:} complements speedup by showing absolute seconds. \textbf{Why it
-  matters:} speedup can look fine while absolute time remains too large for an
-  interactive workflow. \textbf{How to read it:} upticks at high rank count often
-  mean the problem is too small to amortize communication.}
-\end{figure}
+  \begin{minipage}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{strong_scaling_speedup_errorbars.png}
+    \caption[Strong scaling speedup]{Strong scaling speedup with error bars.}
+    \label{fig:strong-speedup}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{strong_scaling_runtime_errorbars.png}
+    \caption[Strong scaling runtime]{Strong scaling runtime variability by rank count.}
+    \label{fig:strong-runtime}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.32\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{strong_scaling_efficiency.png}
+    \caption[Strong scaling efficiency]{Strong scaling efficiency vs.\ ranks.}
+    \label{fig:strong-eff}
+  \end{minipage}
 
-\begin{figure}[!h]
-  \centering
-  \includegraphics[width=\figw]{strong_scaling_efficiency.png}
-  \caption[Strong scaling efficiency]{Poisson strong scaling: parallel efficiency vs.\ ranks.
-  \textbf{Context:} efficiency $= \text{speedup}/p$ highlights losses from serial
-  fractions and collectives. \textbf{Why it matters:} it is the metric instructors
-  often use to temper ``linear speedup'' expectations. \textbf{How to read it:}
-  efficiency near one at low $p$ with decline at high $p$ is textbook for a fixed
-  small problem; the curve shape matters more than any single point estimate.}
-  \label{fig:strong-eff}
 \end{figure}
 
 \begin{table}[!h]
@@ -675,7 +631,7 @@ viewable $(t,S,z)$ space rather than remaining only as CSV columns.
   fixed problem size on that machine---not a plotting bug.}
 \end{table}
 
-\section{Research conclusions (what we learned)}
+\section{Research conclusions}
 \subsection{Monte Carlo conclusions}
 The Monte Carlo stack is \textbf{correct in expectation} (European vs.\ BS), shows
 \textbf{statistical convergence} consistent with $O(N^{-1/2})$ error decay, and
@@ -689,7 +645,7 @@ support the broader lesson from Bueler~\cite{bueler2020petsc} and PETSc
 documentation~\cite{petsc-user-ref}: \textbf{algorithmic choices matter as much as
 ``big-$N$ parallelism''} for wall time and iteration counts.
 
-\subsection{Phase~2 conclusions}
+\subsection{Historical data conclusions}
 Realized volatility is time-varying and event-sensitive; roll-forward repricing
 shows that \textbf{identical MC machinery} yields different economic outputs when
 inputs are disciplined by data rather than by stylized constants.
@@ -700,14 +656,7 @@ The items below are the easiest wins after freezing the current results---mixing
 submission polish with extensions that reuse existing scripts rather than new
 theory:
 \begin{itemize}[leftmargin=*]
-  \item \textbf{Figure sync:} refresh \texttt{overleaf/figures/} from \texttt{visuals/}
-  and \texttt{output/} after any re-render (see \texttt{README\_COMPILE.md}); ParaView
-  stills are already in this PDF but should be recopied if export parameters change.
-  \item \textbf{Numbers vs.\ narrative:} align quoted scalars with
-  \texttt{RESULTS\_PHASE1.md} and \texttt{output/registry/experiment\_runs.csv}.
-  \item \textbf{Reproducibility one-liner:} add \texttt{PETSC\_DIR}, \texttt{PETSC\_ARCH},
-  MPI launcher, ranks, and key command lines to an appendix or footnote (many commands
-  already live in \texttt{docs/PROJECT\_SUMMARY\_AND\_PETSC\_CHECKLIST.md}).
+  
   \item \textbf{Course-bridge scripts:} run or explicitly defer Vec demo, SNES implied
   vol, and sampling-vs.-solver benchmark; cite outputs or JSON paths if required.
   \item \textbf{Optional quote comparison:} fill \texttt{data/raw/quotes\_template.csv}
@@ -717,17 +666,8 @@ theory:
   (weak-scaling PNGs under \texttt{visuals/} are available but not yet in this PDF).
   \item \textbf{Solver / time-integration knobs:} try GAMG or other PCs where available;
   compare TS-based vs.\ backward-Euler stepping on the parabolic drivers.
-  \item \textbf{Final compile:} \texttt{pdflatex} twice; check for undefined references
-  and missing \texttt{figures/} files.
+  \item \textbf{Final compile:} 
 \end{itemize}
-
-\section{Discussion, limitations, and conclusion}
-\subsection{Limitations}
-Monte Carlo uncertainty dominates some plots at moderate $N$; barrier estimates can
-be noisy without importance sampling. PDE experiments are intentionally
-low-dimensional (2D) and are meant as \textbf{methodological demonstrations}, not
-production finance or production CFD. Phase~2 uses realized volatility as a simple
-historical estimator rather than a full stochastic volatility model.
 
 \subsection{Closing statement}
 This project is worthwhile because it forces an integrated narrative: the same
@@ -741,6 +681,93 @@ reference class and citation lineage.
 \paragraph{Software acknowledgment.}
 This work relies on PETSc~\cite{petsc-user-ref,petsc-efficient} and \texttt{petsc4py}.
 
+\section{Data sources and provenance}
+\label{sec:data-sources}
+
+Table~\ref{tab:data-sources} lists every \emph{external} input used in this report.
+Monte Carlo paths, Poisson/heat/advection grids, scaling logs, and ParaView geometry
+are \textbf{generated in-repo} from models and scripts (not third-party downloads).
+
+\begin{table}[ht]
+  \centering
+  \footnotesize
+  \begin{tabular}{@{}p{0.22\linewidth}p{0.28\linewidth}p{0.18\linewidth}p{0.26\linewidth}@{}}
+    \toprule
+    \textbf{Use in report} & \textbf{Provider / method} & \textbf{File} & \textbf{Notes} \\
+    \midrule
+  Phase~2 SPY price \& rolling $\sigma$ (Fig.~\ref{fig:phase2-spy}) &
+  Yahoo Finance daily OHLCV via \texttt{yfinance}~\cite{yfinance,yahoofinance} &
+  \texttt{data/raw/SPY.csv} &
+  SPY (SPDR S\&P 500 ETF)~\cite{spy-etf}; Adj Close for returns; 252-day rolling vol \\
+  Phase~2 calibration \& roll-forward &
+  same CSV + in-repo MC engine &
+  \texttt{SPY.csv}; JSON under \texttt{output/} &
+  $r{=}4.5\%$ stated modeling assumption; strikes near ATM on snapshot dates \\
+  Offline Phase~2 demo &
+  hand-built synthetic series &
+  \texttt{example\_synthetic\_ohlcv.csv} &
+  not market data; for CI/tests without network \\
+  Optional quote check &
+  user-filled template &
+  \texttt{quotes\_template.csv} &
+  illustrative mids only; not used in figures unless populated \\
+    \bottomrule
+  \end{tabular}
+  \caption{External and template data inputs. All other artifacts (MC paths, PDE fields, timing CSVs) are computed locally.}
+  \label{tab:data-sources}
+\end{table}
+
+\subsection{Historical SPY OHLCV (Phase~2)}
+The equity series is the \textbf{SPDR S\&P 500 ETF (ticker SPY)}---a listed product
+whose adjusted prices are intended to reflect distributions and splits~\cite{spy-etf}.
+We downloaded daily open/high/low/close/volume and \textbf{adjusted close} for
+2018-01-02 through 2024-12-30 (1{,}760 trading rows) using
+\texttt{scripts/fetch\_yahoo\_ohlcv.py}, which calls the unofficial
+\texttt{yfinance} client~\cite{yfinance} against Yahoo Finance's public quote
+history~\cite{yahoofinance}. The committed snapshot \texttt{data/raw/SPY.csv} is the
+canonical copy for figures and calibration; re-fetch only if you need to refresh the
+end date.
+
+\textbf{Columns used.} Log returns and annualized realized volatility use
+\textbf{Adj Close} (split/dividend adjusted). Spot $S_0$ for repricing experiments
+defaults to the last available Adj Close in the file unless overridden with
+\texttt{--s0}. Rolling volatility in
+\texttt{plot\_spy\_volatility\_regime.py} applies a trailing window of
+\textbf{252 trading days} and scales by $\sqrt{252}$.
+
+\textbf{Reported option scenario} (Tier~A runs in \texttt{RESULTS\_PHASE1.md}):
+European call, $K{=}580$ (rounded ATM vs.\ last spot $\approx 579.81$ on 2024-12-30),
+$T{=}0.25$ years, $r{=}0.045$, $N{=}200{,}000$ paths, baseline $\sigma{=}0.20$ vs.\
+$\sigma_{\mathrm{cal}}$ from either the full history ($\approx 0.195$) or the last
+252 rows ($\approx 0.126$).
+
+\subsection{Synthetic and optional market templates}
+\texttt{data/raw/example\_synthetic\_ohlcv.csv} is a small fabricated OHLCV file
+(shipped for offline runs of \texttt{phase2\_calibrate\_and\_price.py} without
+network access). \texttt{data/raw/quotes\_template.csv} is a two-row scaffold for
+\texttt{compare\_mc\_to\_quotes.py}; populate it with your own quote snapshot if you
+extend the quote-comparison item in Section~\ref{sec:remaining}.
+
+\subsection{Computed data (no external provider)}
+Phase~1 GBM paths, barrier sweeps, Poisson/heat/advection fields, KSP/PC sweep logs,
+and strong/weak scaling tables are produced by repository scripts documented in
+\texttt{PROJECT\_OUTLINE.md} and \texttt{docs/DATA\_SOURCES.md}. ParaView
+\texttt{.vtp}/\texttt{.pvd} bundles are regenerated locally (large \texttt{.vtp}
+files are git-ignored; see \texttt{output/paraview/vtp/README.md}).
+
+\paragraph{Compliance note.}
+\texttt{yfinance} is convenient for coursework but is not an exchange or vendor
+feed; cite Yahoo as the upstream portal~\cite{yahoofinance}, cache CSVs under
+\texttt{data/raw/}, and respect Yahoo's terms of use and rate limits when re-downloading.
+
+
+
+
+
+
+
+
+\newpage
 \begin{thebibliography}{99}
 
 \bibitem{bueler2020petsc}
@@ -774,6 +801,25 @@ J. Ahrens, B. Geveci, and C. Law.
 \newblock ParaView: An end-user tool for large data visualization.
 \newblock In C.~D. Hansen and C.~R. Johnson, editors, \emph{The Visualization Handbook}, chapter~36. Elsevier, 2005.
 
+\bibitem{yfinance}
+R. Aroussi.
+\newblock \texttt{yfinance}: Yahoo!\ finance market data downloader (Python package).
+\newblock \url{https://github.com/ranaroussi/yfinance}, 2017--present.
+\newblock Accessed May 2025.
+
+\bibitem{yahoofinance}
+Yahoo.
+\newblock Yahoo Finance --- historical quotes and company data.
+\newblock \url{https://finance.yahoo.com/}.
+\newblock Accessed May 2025 for SPY daily OHLCV retrieval.
+
+\bibitem{spy-etf}
+State Street Global Advisors.
+\newblock SPDR S\&P 500 ETF Trust (SPY) --- fund overview and fact sheet.
+\newblock \url{https://www.ssga.com/us/en/institutional/etfs/funds/spdr-sp-500-etf-trust-spy}.
+\newblock Accessed May 2025.
+
 \end{thebibliography}
 
 \end{document}
+
